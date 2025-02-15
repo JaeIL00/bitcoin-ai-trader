@@ -214,6 +214,8 @@ def run(playwright: Playwright):
     
     
 def crawling():
+    print('jo')
+    return
     with sync_playwright() as playwright:
         # 오늘 또는 오늘,어제를 기준으로 모든 목록 조회하여 뉴스 기사 db insert
         run(playwright)

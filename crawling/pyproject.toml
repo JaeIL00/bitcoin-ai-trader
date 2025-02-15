@@ -6,7 +6,7 @@ authors = [
     {name = "OIM",email = "ekvm555@naver.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "playwright (>=1.50.0,<2.0.0)",
 ]
@@ -15,3 +15,6 @@ dependencies = [
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
