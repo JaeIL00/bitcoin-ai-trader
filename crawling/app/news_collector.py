@@ -89,6 +89,8 @@ def run(playwright: Playwright):
             result = parser.parse(news_url, new_page)
             if result:
                 title, content = result["title"], result["content"]
+                # print(f"title: {title}")
+                # print(f"content: {len(content)}")
                 logger.info(f"title: {title}")
                 logger.info(f"content: {len(content)}")
 
@@ -119,7 +121,7 @@ def run(playwright: Playwright):
             new_page.close()
             time.sleep(0.1)
 
-        logger.error("errr", parser.err_url)
+        logger.error(f"err_url: {parser.err_url}")
 
     except Exception as e:
         logger.error(f"e: {e}")

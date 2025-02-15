@@ -33,9 +33,7 @@ class NewsParser:
         try:
             for company_key in self.company:
                 if company_key in news_url:
-                    method_name = self.company[company_key].replace(
-                        ".", ""
-                    )  # yna.co -> yna 처리
+                    method_name = self.company[company_key].split(".")[0]
                     parser_method = getattr(self, method_name)
                     return parser_method(new_page)
 
