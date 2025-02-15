@@ -1,4 +1,4 @@
-from app.news_collector import test
+from app.news_collector import crawling
 
 if __name__=="__main__":
-    test()
+    crawling()
