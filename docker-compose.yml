@@ -1,0 +1,42 @@
+services:
+  db:
+    container_name: db
+    image: postgres:17.3
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=richmindful100@#
+      - POSTGRES_DB=bit
+    ports:
+      - 5432:5432
+    logging:
+      options:
+        max-file: "3"
+        max-size: "250m"
+
+  adminer:
+    container_name: adminer
+    image: dockette/adminer:dg
+    restart: always
+    ports:
+      - 8000:80
+    depends_on:
+      - db
+
+  crawling:
+    container_name: crawling
+    build: 
+      context: ./crawling  # Dockerfile이 있는 경로
+      dockerfile: Dockerfile
+    restart: no #always
+    #volumes:
+      #- ./crawling:/app
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "3"
+        max-size: "250m"
+
+networks:
+  app-network:
+    driver: bridge
