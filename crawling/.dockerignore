@@ -1,0 +1,36 @@
+# Git
+
+.git
+.gitignore
+.gitattributes
+
+# Docker
+
+docker-compose.yml
+Dockerfile
+.docker
+.dockerignore
+
+# Byte-compiled / optimized / DLL files
+
+**/**pycache**/
+**/\*.py[cod]
+
+# Distribution / packaging
+
+.Python
+develop-eggs/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+_.egg-info/
+.installed.cfg
+_.egg
+
+# VS Code
+
+.vscode/
