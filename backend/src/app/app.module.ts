@@ -3,6 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NewsModule } from 'src/news/news.module';
+import { News } from 'src/news/entities/news.entity';
 
 @Module({
   imports: [
@@ -13,7 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
     // 2. TypeOrmModule 비동기 설정
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, NewsModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
@@ -22,7 +24,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
-        entities: [],
+        entities: [News],
         synchronize: true, //configService.get('NODE_ENV') !== 'production',
         logging: true, // 쿼리 로깅 활성화 (디버깅용)
       }),
