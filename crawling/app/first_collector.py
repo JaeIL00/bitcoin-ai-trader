@@ -1,4 +1,4 @@
-import requests
+import re
 import logging
 import time
 from datetime import datetime, timedelta
@@ -21,22 +21,19 @@ def search_news_by_date(page):
             break
 
         for news in news_list:
-            date = news.query_selector(".TimeWrap-sc-42qvi5-1")
+            date = news.query_selector(".TimeWrap-sc-42qvi5-1.gUbaPh")
             if date is None:
                 logger.error("Not found date element")
                 break
 
             date_text = date.inner_text()
-            lines = date_text.split("\n")
-            if len(lines) != 2:
+            pattern = r"(\d{4}년\s\d{1,2}월\s\d{1,2}일)"
+            result = re.search(pattern, date_text)
+            if not result:
                 logger.error(f"Date format is wrong: {date_text}")
                 break
 
-            date_str = lines[1]
-
-            date_str = " ".join(date_str.split()[:-1])
-
-            article_date = datetime.strptime(date_str, "%Y년 %m월 %d일")
+            article_date = datetime.strptime(result.group(), "%Y년 %m월 %d일")
 
             today = datetime.now()
 
@@ -47,24 +44,24 @@ def search_news_by_date(page):
             )
 
             # 어제 기사 데이터가 서비스에 없을 시 최초에만 수행
-            # yesterday = today - timedelta(days=1)  # 어제 날짜 계산
-            # is_yesterday = (
-            #     article_date.year == yesterday.year and
-            #     article_date.month == yesterday.month and
-            #     article_date.day == yesterday.day
-            # )
+            yesterday = today - timedelta(days=1)  # 어제 날짜 계산
+            is_yesterday = (
+                article_date.year == yesterday.year
+                and article_date.month == yesterday.month
+                and article_date.day == yesterday.day
+            )
 
             if is_today:
                 filtered_news_list.append(news)
                 # 빠른 디버깅 하기위해 길이 제한
-                if len(filtered_news_list) > 3:
-                    is_load_news = False
-                    break
+                # if len(filtered_news_list) > 3:
+                #     is_load_news = False
+                #     break
                 continue
-            # elif(is_yesterday):
-            #     # 어제 기사 데이터가 서비스에 없을 시 최초에만 수행
-            #     filtered_news_list.append(news)
-            #     continue
+            elif is_yesterday:
+                # 어제 기사 데이터가 서비스에 없을 시 최초에만 수행
+                filtered_news_list.append(news)
+                continue
             else:
                 is_load_news = False
                 break
@@ -73,6 +70,7 @@ def search_news_by_date(page):
             filtered_news_list.clear()
             page.get_by_role("button", name="더보기").click()
             page.wait_for_load_state("networkidle")
+            logger.info("Clicked more news button")
 
     return filtered_news_list
 
