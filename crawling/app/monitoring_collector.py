@@ -21,6 +21,7 @@ def scrape_content(browser, url):
 
 
 def monitoring(playwright, latest_title):
+    fresh_latest_title = latest_title
     logger.info("Start monitoring crawling")
 
     chromium = playwright.chromium  # or "firefox" or "webkit".
@@ -51,10 +52,12 @@ def monitoring(playwright, latest_title):
                 logger.info(f"title: {title}")
                 logger.info(repr(content))
 
-                if title == latest_title:
+                if title == fresh_latest_title:
                     break
 
                 # break안되면 vectorstore post api
+                # fresh_latest_title 갱신
+                fresh_latest_title = title
 
             time.sleep(60)
 
