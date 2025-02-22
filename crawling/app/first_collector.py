@@ -15,7 +15,7 @@ def search_news_by_date(page):
     filtered_news_list = []
 
     while is_load_news:
-        news_list = page.query_selector_all(".ArticleWrapper-sc-42qvi5-0")
+        news_list = page.query_selector_all(".ArticleWrapper-sc-42qvi5-0.hdjQhU")
         if len(news_list) == 0:
             logger.error("Not found news list element")
             break
@@ -54,9 +54,9 @@ def search_news_by_date(page):
             if is_today:
                 filtered_news_list.append(news)
                 # 빠른 디버깅 하기위해 길이 제한
-                # if len(filtered_news_list) > 3:
-                #     is_load_news = False
-                #     break
+                if len(filtered_news_list) > 3:
+                    is_load_news = False
+                    break
                 continue
             elif is_yesterday:
                 # 어제 기사 데이터가 서비스에 없을 시 최초에만 수행
@@ -78,6 +78,8 @@ def search_news_by_date(page):
 def scrape_content(browser, page):
     logger.info("Start scrape content")
 
+    latest_title = None
+
     parser = NewsParser()
     for news in search_news_by_date(page):
         new_page = browser.new_page()
@@ -86,6 +88,8 @@ def scrape_content(browser, page):
         result = parser.parse(news_url, new_page)
         if result:
             title, content = result["title"], result["content"]
+            if latest_title is None:
+                latest_title = title
             logger.info(f"title: {title}")
             logger.info(repr(content))
 
@@ -95,6 +99,7 @@ def scrape_content(browser, page):
         time.sleep(0.1)
 
     logger.error(f"err_url: {parser.err_url}")
+    return latest_title
 
 
 def collect_yesterday_to_now(playwright: Playwright):
@@ -109,12 +114,13 @@ def collect_yesterday_to_now(playwright: Playwright):
         page.wait_for_load_state("networkidle")
         logger.info("Clicked category_btn")
 
-        scrape_content(browser, page)
+        latest_title = scrape_content(browser, page)
+
+        logger.info("First run completed: collected data from yesterday to now")
+        browser.close()
+        logger.info("Browser close")
+
+        return latest_title
 
     except Exception as e:
         logger.error(f"e: {e}")
-
-    finally:
-        # 현재 - 어제까지의 기사 수집 완료
-        logger.info("First run completed: collected data from yesterday to now")
-        browser.close()
