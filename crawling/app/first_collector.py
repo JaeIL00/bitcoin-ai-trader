@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def search_news_by_date(page):
-    print("Start search news by date")
+    logger.info("Start search news by date")
 
     is_load_news = True
     filtered_news_list = []
@@ -17,19 +17,19 @@ def search_news_by_date(page):
     while is_load_news:
         news_list = page.query_selector_all(".ArticleWrapper-sc-42qvi5-0")
         if len(news_list) == 0:
-            print("Not found news list element")
+            logger.error("Not found news list element")
             break
 
         for news in news_list:
             date = news.query_selector(".TimeWrap-sc-42qvi5-1")
             if date is None:
-                print("Not found date element")
+                logger.error("Not found date element")
                 break
 
             date_text = date.inner_text()
             lines = date_text.split("\n")
             if len(lines) != 2:
-                print(f"Date format is wrong: {date_text}")
+                logger.error(f"Date format is wrong: {date_text}")
                 break
 
             date_str = lines[1]
@@ -78,7 +78,7 @@ def search_news_by_date(page):
 
 
 def scrape_content(browser, page):
-    print("Start scrape content")
+    logger.info("Start scrape content")
 
     parser = NewsParser()
     for news in search_news_by_date(page):
@@ -88,15 +88,15 @@ def scrape_content(browser, page):
         result = parser.parse(news_url, new_page)
         if result:
             title, content = result["title"], result["content"]
-            print(f"title: {title}")
-            print(repr(content))
+            logger.info(f"title: {title}")
+            logger.info(repr(content))
 
             # vectorstore post api
 
         new_page.close()
         time.sleep(0.1)
 
-    print(f"err_url: {parser.err_url}")
+    logger.error(f"err_url: {parser.err_url}")
 
 
 def collect_yesterday_to_now(playwright: Playwright):
@@ -109,14 +109,14 @@ def collect_yesterday_to_now(playwright: Playwright):
 
         page.get_by_role("button", name="암호화폐", exact=True).click()
         page.wait_for_load_state("networkidle")
-        print("Clicked category_btn")
+        logger.info("Clicked category_btn")
 
         scrape_content(browser, page)
 
     except Exception as e:
-        print(f"e: {e}")
+        logger.error(f"e: {e}")
 
     finally:
         # 현재 - 어제까지의 기사 수집 완료
-        print("First run completed: collected data from yesterday to now")
+        logger.info("First run completed: collected data from yesterday to now")
         browser.close()
