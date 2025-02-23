@@ -1,11 +1,11 @@
 import re
-import logging
 import time
 from datetime import datetime, timedelta
+from log_generator import set_logger
 from news_parser import NewsParser
 from playwright.sync_api import Playwright
 
-logger = logging.getLogger(__name__)
+logger = set_logger()
 
 
 def search_news_by_date(page):
@@ -54,9 +54,9 @@ def search_news_by_date(page):
             if is_today:
                 filtered_news_list.append(news)
                 # 빠른 디버깅 하기위해 길이 제한
-                if len(filtered_news_list) > 3:
-                    is_load_news = False
-                    break
+                # if len(filtered_news_list) > 3:
+                #     is_load_news = False
+                #     break
                 continue
             elif is_yesterday:
                 # 어제 기사 데이터가 서비스에 없을 시 최초에만 수행

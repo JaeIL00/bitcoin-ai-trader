@@ -1,6 +1,6 @@
-import logging
+from log_generator import set_logger
 
-logger = logging.getLogger(__name__)
+logger = set_logger()
 
 
 class NewsParser:

@@ -1,9 +1,9 @@
 import time
-import logging
 from datetime import datetime
+from log_generator import set_logger
 from news_parser import NewsParser
 
-logger = logging.getLogger(__name__)
+logger = set_logger()
 
 
 def scrape_content(browser, url):
