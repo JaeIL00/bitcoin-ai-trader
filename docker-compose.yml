@@ -47,6 +47,11 @@ services:
       - 5001:8000
     depends_on:
       - ollama
+    environment:
+      - LANGSMITH_TRACING=true
+      - LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
+      - LANGSMITH_API_KEY=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
+      - LANGSMITH_PROJECT="vector_store"
     logging:
       driver: "json-file"
       options:
