@@ -1,6 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 from vector_store_manager import VectorStoreManager
+from pydantic import BaseModel
+
+
+class ContentInput(BaseModel):
+    content: str
 
 
 app = FastAPI()
@@ -13,10 +18,9 @@ async def redirect_root_to_docs():
 
 
 @app.post("/vector-store/add-content")
-async def add_content(content_input: str):
+async def add_content(body: ContentInput):
     try:
-        # vector_store_handler(action="save", content_input=content_input)
-        vector_store_manager.add_documents(content_input)
+        vector_store_manager.add_documents(body.content)
         return {"status": "success", "message": "Content added successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

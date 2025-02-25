@@ -29,14 +29,24 @@ services:
       context: ./crawling  # Dockerfile이 있는 경로
       dockerfile: Dockerfile
     restart: no #always
-    #volumes:
-      #- ./crawling/app:/app
+    depends_on:
+      - playwright
     logging:
       driver: "json-file"
       options:
         max-file: "3"
         max-size: "250m"
 
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.50.0-noble
+    container_name: playwright
+    ports:
+      - "3210:3000"
+    user: pwuser
+    working_dir: /home/pwuser
+    command: /bin/sh -c "npx -y playwright@1.50.0 run-server --port 3000 --host 0.0.0.0"
+    init: true
+    
   vector_rag:
     container_name: vector_rag
     build: 
@@ -45,8 +55,8 @@ services:
     restart: no #always
     ports:
       - 5001:8000
-    depends_on:
-      - ollama
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # 이 부분 추가! 호스트 머신 접근용
     environment:
       - LANGSMITH_TRACING=true
       - LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
@@ -58,17 +68,6 @@ services:
         max-file: "3"
         max-size: "250m"
 
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  ollama_data:
