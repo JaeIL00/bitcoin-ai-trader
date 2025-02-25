@@ -9,10 +9,10 @@ FILE_HANDLER_FORMAT = "%(levelname)s\t[%(filename)s:%(funcName)s:%(lineno)s]\t>>
 
 
 def set_logger() -> logging.Logger:
-    console = Console(width=400)
+    console = Console(width=600)
     rich_handler = RichHandler(console=console, rich_tracebacks=True, show_time=False)
 
-    logging.basicConfig(level="NOTSET", format=RICH_FORMAT, handlers=[rich_handler])
+    logging.basicConfig(level=logging.INFO, format=RICH_FORMAT, handlers=[rich_handler])
     logger = logging.getLogger("rich")
 
     file_handler = logging.FileHandler(LOG_PATH, mode="a", encoding="utf-8")

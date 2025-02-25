@@ -14,6 +14,9 @@ if __name__ == "__main__":
         # 오늘 또는 오늘,어제를 기준으로 모든 목록 조회하여 뉴스 기사 db insert
         latest_title = collect_yesterday_to_now(playwright)
 
-        monitoring(playwright, latest_title)
+        if latest_title is None:
+            logger.warning("Retruned None from collect_yesterday_to_now")
+        else:
+            monitoring(playwright, latest_title)
 
         # 암호화폐 카테고리를 정말 클릭해서 해당 기사만 보이는건지 점검해야함

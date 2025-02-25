@@ -1,4 +1,5 @@
 import time
+import requests
 from datetime import datetime
 from log_generator import set_logger
 from news_parser import NewsParser
@@ -10,61 +11,87 @@ def scrape_content(browser, url):
     logger.info("Start scrape content")
 
     parser = NewsParser()
-    new_page = browser.new_page()
 
-    new_page.goto(url=url, wait_until="domcontentloaded")
-    result = parser.parse(url, new_page)
-    if result:
-        return result["title"], result["content"]
+    with browser.new_page() as new_page:
+        new_page.goto(url=url, wait_until="domcontentloaded")
+        result = parser.parse(url, new_page)
+        if result:
+            return result["title"], result["content"]
 
-    logger.error(f"err_url: {parser.err_url}")
+        logger.error(f"err_url: {parser.err_url}")
 
 
 def monitoring(playwright, latest_title):
     fresh_latest_title = latest_title
     logger.info("Start monitoring crawling")
+    logger.info(f"latest_title: {latest_title}")
 
-    chromium = playwright.chromium  # or "firefox" or "webkit".
-    browser = chromium.launch()
+    browser = playwright.chromium.connect("ws://playwright:3000")
 
     is_stop = False
 
     while not is_stop:
-        page = browser.new_page()
-        try:
-            page.set_default_navigation_timeout(60000)
-            page.goto(url="https://coinness.com/article", wait_until="networkidle")
+        logger.info("monitor....")
+        with browser.new_page() as page:
+            try:
+                page.set_default_navigation_timeout(60000)
+                page.goto(url="https://coinness.com/article", wait_until="networkidle")
 
-            page.get_by_role("button", name="암호화폐", exact=True).click()
-            page.wait_for_load_state("networkidle")
-            logger.info("Clicked category_btn")
+                page.get_by_role("button", name="암호화폐", exact=True).click()
+                page.wait_for_load_state("networkidle")
+                logger.info("Clicked category_btn")
 
-            news_list = page.query_selector_all(".ArticleWrapper-sc-42qvi5-0.hdjQhU")
+                news_list = page.query_selector_all(
+                    ".ArticleWrapper-sc-42qvi5-0.hdjQhU"
+                )
 
-            if len(news_list) == 0:
-                is_stop = True
-                logger.error("news_list is empty")
-                break
-
-            for news in news_list:
-                url = news.get_attribute("href")
-                title, content = scrape_content(browser, url)
-                logger.info(f"title: {title}")
-                logger.info(repr(content))
-
-                if title == fresh_latest_title:
+                if len(news_list) == 0:
+                    is_stop = True
+                    logger.error("news_list is empty")
                     break
 
-                # break안되면 vectorstore post api
-                # fresh_latest_title 갱신
-                fresh_latest_title = title
+                temp_title = None
 
-            time.sleep(60)
+                for index, news in enumerate(news_list):
+                    url = news.get_attribute("href")
+                    title, content = scrape_content(browser, url)
 
-        except Exception as e:
-            page.close()
-            logger.error(f"e: {e}")
-            time.sleep(300)
+                    if title == fresh_latest_title:
+                        logger.info(f"Same lastest title and current title")
+                        logger.info(f"Break")
+                        break
+
+                    logger.info(f"Catch new content!!")
+                    logger.info(f"title: {title}")
+
+                    try:
+                        response = requests.post(
+                            "http://vector_rag:8000/vector-store/add-content",
+                            json={
+                                "content": content,
+                            },
+                        )
+
+                        response.raise_for_status()
+
+                        if index == 0:
+                            temp_title = title
+                        logger.info("Success save content")
+                    except Exception as e:
+                        logger.error(f"Failed Save Content: {e}")
+                        break
+
+                    # fresh_latest_title 갱신
+                if temp_title is not None:
+                    latest_title = temp_title
+
+                time.sleep(30)
+
+            except Exception as e:
+                logger.error(f"e: {e}")
+                time.sleep(300)
+            finally:
+                page.close()
 
     browser.close()
     now = datetime.now()
