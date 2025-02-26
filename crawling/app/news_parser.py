@@ -1,6 +1,6 @@
-import logging
+from log_generator import set_logger
 
-logger = logging.getLogger(__name__)
+logger = set_logger()
 
 
 class NewsParser:
@@ -26,6 +26,10 @@ class NewsParser:
             "yna.co": "yna.co",
             "mt.co": "mt.co",
             "einfomax": "einfomax",
+            "heraldcorp": "heraldcorp",
+            "theguru": "theguru",
+            "etnews": "etnews",
+            "pinpointnews": "pinpointnews",
         }
 
     def parse(self, news_url, new_page):
@@ -47,38 +51,32 @@ class NewsParser:
             return None
 
     def digitaltoday(self, new_page):
-        logger.info("Start parsing news - digitaltoday")
         title = new_page.query_selector("h3").inner_text()
         content = new_page.query_selector("#article-view-content-div").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def coinreaders(self, new_page):
-        logger.info("Start parsing news - coinreaders")
         title = new_page.query_selector(".read_title").inner_text()
         content = new_page.query_selector("#textinput").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def blockmedia(self, new_page):
-        logger.info("Start parsing news - blockmedia")
         title = new_page.query_selector("h1").inner_text()
         content = new_page.query_selector("#pavo_contents").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def donga(self, new_page):
-        logger.info("Start parsing news - donga")
         title_list = new_page.query_selector_all("h1")
         title = title_list[1].inner_html()
         content = new_page.query_selector(".news_view").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def etoday(self, new_page):
-        logger.info("Start parsing news - etoday")
         title = new_page.query_selector(".main_title").inner_text()
         content = new_page.query_selector(".articleView").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def asiae(self, new_page):
-        logger.info("Start parsing news - asiae")
         title = new_page.query_selector("h1").inner_text()
         content_container = new_page.query_selector(".article")
         contents = content_container.query_selector_all("p")
@@ -91,43 +89,36 @@ class NewsParser:
         return {"title": title.strip(), "content": content.strip()}
 
     def sedaily(self, new_page):
-        logger.info("Start parsing news - sedaily")
         title = new_page.query_selector("h1").inner_text()
         content = new_page.query_selector(".article").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def techm(self, new_page):
-        logger.info("Start parsing news - techm")
         title = new_page.query_selector(".heading").inner_text()
         content = new_page.query_selector("#article-view-content-div").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def joongang(self, new_page):
-        logger.info("Start parsing news - joongang")
         title = new_page.query_selector("h1").inner_text()
         content = new_page.query_selector(".article_body").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def fnnews(self, new_page):
-        logger.info("Start parsing news - fnnews")
         title = new_page.query_selector("h1").inner_text()
         content = new_page.query_selector("#article_content").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def bonmedia(self, new_page):
-        logger.info("Start parsing news - bonmedia")
         title = new_page.query_selector(".heading").inner_text()
         content = new_page.query_selector("#article-view-content-div").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def zdnet(self, new_page):
-        logger.info("Start parsing news - zdnet")
         title = new_page.query_selector("h1").inner_text()
         content = new_page.query_selector("#articleBody").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def blockstreet(self, new_page):
-        logger.info("Start parsing news - blockstreet")
         title = new_page.query_selector("h1").inner_text()
         content = new_page.query_selector(".view-body").inner_text()
         return {"title": title.strip(), "content": content.strip()}
@@ -139,31 +130,48 @@ class NewsParser:
         return {"title": title.strip(), "content": content.strip()}
 
     def newspim(self, new_page):
-        logger.info("Start parsing news - newspim")
         title = new_page.query_selector("#titlArea1").inner_text()
         content = new_page.query_selector("#viewcontents").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def decenter(self, new_page):
-        logger.info("Start parsing news - decenter")
         title = new_page.query_selector("h2").inner_text()
         content = new_page.query_selector("#articleBody").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def yna(self, new_page):
-        logger.info("Start parsing news - yna")
         title = new_page.query_selector("h1").inner_text()
         content = new_page.query_selector(".article").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def mt(self, new_page):
-        logger.info("Start parsing news - mt")
         title = new_page.query_selector("h1").inner_text()
         content = new_page.query_selector(".con_area").inner_text()
         return {"title": title.strip(), "content": content.strip()}
 
     def einfomax(self, new_page):
-        logger.info("Start parsing news - einfomax")
         title = new_page.query_selector(".heading").inner_text()
+        content = new_page.query_selector("#article-view-content-div").inner_text()
+        return {"title": title.strip(), "content": content.strip()}
+
+    def heraldcorp(self, new_page):
+        title_list = new_page.query_selector_all("h1")
+        title = title_list[1].inner_html()
+        content = new_page.query_selector("#articleText").inner_text()
+        return {"title": title.strip(), "content": content.strip()}
+
+    def theguru(self, new_page):
+        title_list = new_page.query_selector_all("h2")
+        title = title_list[1].inner_html()
+        content = new_page.query_selector("#news_body_area").inner_text()
+        return {"title": title.strip(), "content": content.strip()}
+
+    def etnews(self, new_page):
+        title = new_page.query_selector("#headline").inner_text()
+        content = new_page.query_selector("#articleBody").inner_text()
+        return {"title": title.strip(), "content": content.strip()}
+
+    def pinpointnews(self, new_page):
+        title = new_page.query_selector("h3").inner_text()
         content = new_page.query_selector("#article-view-content-div").inner_text()
         return {"title": title.strip(), "content": content.strip()}

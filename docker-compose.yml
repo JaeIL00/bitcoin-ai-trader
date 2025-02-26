@@ -29,8 +29,42 @@ services:
       context: ./crawling  # Dockerfile이 있는 경로
       dockerfile: Dockerfile
     restart: no #always
-    #volumes:
-      #- ./crawling:/app
+    environment:
+      - TZ=Asia/Seoul
+      - PYTHONPATH=/app
+    depends_on:
+      - playwright
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "3"
+        max-size: "250m"
+
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.50.0-noble
+    container_name: playwright
+    ports:
+      - "3210:3000"
+    user: pwuser
+    working_dir: /home/pwuser
+    command: /bin/sh -c "npx -y playwright@1.50.0 run-server --port 3000 --host 0.0.0.0"
+    init: true
+    
+  vector_rag:
+    container_name: vector_rag
+    build: 
+      context: ./vector_rag  # Dockerfile이 있는 경로
+      dockerfile: Dockerfile
+    restart: no #always
+    ports:
+      - 5001:8000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # 이 부분 추가! 호스트 머신 접근용
+    environment:
+      - LANGSMITH_TRACING=true
+      - LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
+      - LANGSMITH_API_KEY=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
+      - LANGSMITH_PROJECT="vector_store"
     logging:
       driver: "json-file"
       options:

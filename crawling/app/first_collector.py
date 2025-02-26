@@ -1,11 +1,12 @@
 import re
-import logging
 import time
+import requests
 from datetime import datetime, timedelta
+from log_generator import set_logger
 from news_parser import NewsParser
 from playwright.sync_api import Playwright
 
-logger = logging.getLogger(__name__)
+logger = set_logger()
 
 
 def search_news_by_date(page):
@@ -54,9 +55,9 @@ def search_news_by_date(page):
             if is_today:
                 filtered_news_list.append(news)
                 # 빠른 디버깅 하기위해 길이 제한
-                if len(filtered_news_list) > 3:
-                    is_load_news = False
-                    break
+                # if len(filtered_news_list) > 3:
+                #     is_load_news = False
+                #     break
                 continue
             elif is_yesterday:
                 # 어제 기사 데이터가 서비스에 없을 시 최초에만 수행
@@ -75,36 +76,54 @@ def search_news_by_date(page):
     return filtered_news_list
 
 
-def scrape_content(browser, page):
+def scrape_content(playwright, page):
     logger.info("Start scrape content")
+
+    browser = playwright.chromium.connect("ws://playwright:3000")
 
     latest_title = None
 
     parser = NewsParser()
-    for news in search_news_by_date(page):
-        new_page = browser.new_page()
-        news_url = news.get_attribute("href")
-        new_page.goto(url=news_url, wait_until="domcontentloaded")
-        result = parser.parse(news_url, new_page)
-        if result:
-            title, content = result["title"], result["content"]
-            if latest_title is None:
-                latest_title = title
-            logger.info(f"title: {title}")
-            logger.info(repr(content))
 
-            # vectorstore post api
+    filtered_news_list = search_news_by_date(page)
 
-        new_page.close()
-        time.sleep(0.1)
+    for index, news in enumerate(filtered_news_list):
+        logger.info(f"{index + 1}/{len(filtered_news_list)}")
+        with browser.new_page() as new_page:
+            news_url = news.get_attribute("href")
+            new_page.set_default_navigation_timeout(60000)
+            new_page.goto(url=news_url, wait_until="domcontentloaded")
+            result = parser.parse(news_url, new_page)
+            if result:
+                title, content = result["title"], result["content"]
+                if latest_title is None:
+                    latest_title = title
+                logger.info(f"title: {title}")
+                try:
+                    response = requests.post(
+                        "http://vector_rag:8000/vector-store/add-content",
+                        json={
+                            "content": content,
+                        },
+                    )
+
+                    response.raise_for_status()
+
+                    logger.info("Success save content")
+                except Exception as e:
+                    logger.error(f"Failed Save Content: {e}")
+
+            new_page.close()
+            time.sleep(1)
 
     logger.error(f"err_url: {parser.err_url}")
+
+    browser.close()
     return latest_title
 
 
 def collect_yesterday_to_now(playwright: Playwright):
-    chromium = playwright.chromium  # or "firefox" or "webkit".
-    browser = chromium.launch()
+    browser = playwright.chromium.connect("ws://playwright:3000")
     page = browser.new_page()
     page.set_default_navigation_timeout(60000)
     try:
@@ -114,13 +133,15 @@ def collect_yesterday_to_now(playwright: Playwright):
         page.wait_for_load_state("networkidle")
         logger.info("Clicked category_btn")
 
-        latest_title = scrape_content(browser, page)
+        latest_title = scrape_content(playwright, page)
 
         logger.info("First run completed: collected data from yesterday to now")
-        browser.close()
-        logger.info("Browser close")
 
         return latest_title
 
     except Exception as e:
         logger.error(f"e: {e}")
+
+    finally:
+        browser.close()
+        logger.info("collect_yesterday_to_now Browser close")
