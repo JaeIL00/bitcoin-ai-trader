@@ -13,6 +13,7 @@ def scrape_content(browser, url):
     parser = NewsParser()
 
     with browser.new_page() as new_page:
+        new_page.set_default_navigation_timeout(60000)
         new_page.goto(url=url, wait_until="domcontentloaded")
         result = parser.parse(url, new_page)
         if result:
@@ -28,10 +29,31 @@ def monitoring(playwright, latest_title):
 
     browser = playwright.chromium.connect("ws://playwright:3000")
 
+    start_date = datetime.now().date()
+
     is_stop = False
 
     while not is_stop:
         logger.info("monitor....")
+        now = datetime.now()
+        current_date = now.date()
+        current_hour = now.hour
+
+        days_difference = (current_date - start_date).days
+
+        logger.info(f"start_date: {start_date}")
+        logger.info(f"current_date: {current_date}")
+        logger.info(f"current_date > start_date: {current_date > start_date}")
+        logger.info(f"current_hour: {current_hour} >= 5")
+
+        if days_difference >= 1 and current_hour >= 5:
+            logger.info(f"하루가 지나고 새벽 5시 이후입니다. 크롤링 작업 종료합니다.")
+            logger.info(
+                f"시작 날짜: {start_date}, 현재 날짜: {current_date}, 현재 시간: {current_hour}시"
+            )
+            is_stop = True
+            break
+
         with browser.new_page() as page:
             try:
                 page.set_default_navigation_timeout(60000)
@@ -62,6 +84,7 @@ def monitoring(playwright, latest_title):
                         break
 
                     logger.info(f"Catch new content!!")
+                    logger.info(f"fresh_latest_title: {fresh_latest_title}")
                     logger.info(f"title: {title}")
 
                     try:
@@ -83,9 +106,12 @@ def monitoring(playwright, latest_title):
 
                     # fresh_latest_title 갱신
                 if temp_title is not None:
-                    latest_title = temp_title
+                    logger.info(f"temp_title 새로 할당: latest_title: {latest_title}")
+                    logger.info(f"temp_title: {temp_title}")
+                    fresh_latest_title = temp_title
+                    temp_title = None
 
-                time.sleep(30)
+                time.sleep(120)
 
             except Exception as e:
                 logger.error(f"e: {e}")
@@ -93,6 +119,15 @@ def monitoring(playwright, latest_title):
             finally:
                 page.close()
 
-    browser.close()
-    now = datetime.now()
-    logger.info(f"Browser close. {now.strftime("%Y년 %m월 %d일 %H:%M:%S")}")
+    try:
+        response = requests.delete(
+            "http://vector_rag:8000/vector-store",
+        )
+        response.raise_for_status()
+        logger.info("Success delete store")
+    except Exception as e:
+        logger.error(f"Failed delete store: {e}")
+    finally:
+        browser.close()
+        now = datetime.now()
+        logger.info(f"Browser close. {now.strftime("%Y년 %m월 %d일 %H:%M:%S")}")

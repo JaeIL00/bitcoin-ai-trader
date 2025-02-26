@@ -41,7 +41,6 @@ RUN poetry install --no-root --only main
 RUN poetry run playwright install chromium
 
 COPY ./app /app
-ENV PYTHONPATH=/app
 
 # 컨테이너 실행 명령 정의
 CMD ["python3", "main.py"]

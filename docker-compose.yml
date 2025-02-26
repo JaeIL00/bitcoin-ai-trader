@@ -29,6 +29,9 @@ services:
       context: ./crawling  # Dockerfile이 있는 경로
       dockerfile: Dockerfile
     restart: no #always
+    environment:
+      - TZ=Asia/Seoul
+      - PYTHONPATH=/app
     depends_on:
       - playwright
     logging:

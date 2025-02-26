@@ -87,7 +87,8 @@ def scrape_content(playwright, page):
 
     filtered_news_list = search_news_by_date(page)
 
-    for news in filtered_news_list:
+    for index, news in enumerate(filtered_news_list):
+        logger.info(f"{index + 1}/{len(filtered_news_list)}")
         with browser.new_page() as new_page:
             news_url = news.get_attribute("href")
             new_page.set_default_navigation_timeout(60000)
