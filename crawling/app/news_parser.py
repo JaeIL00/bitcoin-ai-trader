@@ -27,6 +27,9 @@ class NewsParser:
             "mt.co": "mt.co",
             "einfomax": "einfomax",
             "heraldcorp": "heraldcorp",
+            "theguru": "theguru",
+            "etnews": "etnews",
+            "pinpointnews": "pinpointnews",
         }
 
     def parse(self, news_url, new_page):
@@ -155,4 +158,20 @@ class NewsParser:
         title_list = new_page.query_selector_all("h1")
         title = title_list[1].inner_html()
         content = new_page.query_selector("#articleText").inner_text()
+        return {"title": title.strip(), "content": content.strip()}
+
+    def theguru(self, new_page):
+        title_list = new_page.query_selector_all("h2")
+        title = title_list[1].inner_html()
+        content = new_page.query_selector("#news_body_area").inner_text()
+        return {"title": title.strip(), "content": content.strip()}
+
+    def etnews(self, new_page):
+        title = new_page.query_selector("#headline").inner_text()
+        content = new_page.query_selector("#articleBody").inner_text()
+        return {"title": title.strip(), "content": content.strip()}
+
+    def pinpointnews(self, new_page):
+        title = new_page.query_selector("h3").inner_text()
+        content = new_page.query_selector("#article-view-content-div").inner_text()
         return {"title": title.strip(), "content": content.strip()}
