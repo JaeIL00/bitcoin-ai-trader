@@ -34,7 +34,6 @@ def monitoring(playwright, latest_title):
     is_stop = False
 
     while not is_stop:
-        logger.info("monitor....")
         now = datetime.now()
         current_date = now.date()
         current_hour = now.hour
@@ -111,6 +110,7 @@ def monitoring(playwright, latest_title):
                     fresh_latest_title = temp_title
                     temp_title = None
 
+                logger.info("monitor....")
                 time.sleep(120)
 
             except Exception as e:
