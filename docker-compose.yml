@@ -71,6 +71,20 @@ services:
         max-file: "3"
         max-size: "250m"
 
+  trade_signal_monitoring:
+    container_name: trade_signal_monitoring
+    build: 
+      context: ./trade_signal_monitoring  # Dockerfile이 있는 경로
+      dockerfile: Dockerfile
+    restart: no #always
+    environment:
+      - TZ=Asia/Seoul
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "3"
+        max-size: "250m"
+
 networks:
   app-network:
     driver: bridge
