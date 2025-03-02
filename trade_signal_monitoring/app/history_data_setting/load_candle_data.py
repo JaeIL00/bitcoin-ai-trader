@@ -3,7 +3,7 @@ from datetime import datetime
 import requests
 import multiprocessing
 
-from .calc_ma import calculate_moving_average
+from calculation.moving_average import moving_average
 from log_generator import set_logger
 
 logger = set_logger()
@@ -40,7 +40,7 @@ def get_candle_api_call(url, count):
 
         response.raise_for_status()
 
-        return calculate_moving_average(candles=response.json(), period=count)
+        return moving_average(candles=response.json(), period=count)
     except Exception as e:
         logger.error(f"캔들 조회 api({url}) 에러: {e}")
 

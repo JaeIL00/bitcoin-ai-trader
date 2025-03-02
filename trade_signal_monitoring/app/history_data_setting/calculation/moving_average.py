@@ -46,7 +46,7 @@ logger = set_logger()
 #     }
 
 
-def calculate_moving_average(candles, period):
+def moving_average(candles, period):
     """
     캔들 데이터를 이용해 이동평균선을 계산하는 함수
 
