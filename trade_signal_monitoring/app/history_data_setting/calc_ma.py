@@ -105,4 +105,12 @@ def calculate_moving_average(candles, period):
 
     # 이동평균선 테이블에 post api
     logger.info(f"이동평균선 계산 완료. type: {type}")
+    """
+    {
+        'type': 'hour4', 
+        'oldest_price': 155800000.0, 
+        'ma': 146933033.33, 
+        'last_updated': datetime.datetime(2025, 2, 27, 13, 57, 30, 728432, tzinfo=datetime.timezone.utc)
+    }
+    """
     print(result)

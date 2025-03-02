@@ -1,7 +1,9 @@
 import requests
 from datetime import datetime
-from .calc_ma import calculate_moving_average
+import requests
+import multiprocessing
 
+from .calc_ma import calculate_moving_average
 from log_generator import set_logger
 
 logger = set_logger()
@@ -49,8 +51,12 @@ def get_hour_1_candle():
     get_candle_api_call(url=hour_1_url, count=168)  # 7일치
 
 
-# if __name__ == "__main__":
-#     get_day_candle()
-#     get_week_candle()
-#     get_hour_4_candle()
-#     get_hour_1_candle()
+def get_candle_process():
+    candle_day_p = multiprocessing.Process(target=get_day_candle)
+    candle_week_p = multiprocessing.Process(target=get_week_candle)
+    candle_hour_4_p = multiprocessing.Process(target=get_hour_4_candle)
+    candle_hour_1_p = multiprocessing.Process(target=get_hour_1_candle)
+    candle_day_p.start()
+    candle_week_p.start()
+    candle_hour_4_p.start()
+    candle_hour_1_p.start()
