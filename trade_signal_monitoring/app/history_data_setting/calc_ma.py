@@ -101,16 +101,15 @@ def calculate_moving_average(candles, period):
                 상승할 때 저항대 역할을 하는 경우가 많습니다.
             """
             result["ma"] = ma_200
-            result["last_updated"] = datetime.now(timezone.utc)
+            result["last_updated"] = datetime.now(timezone.utc).isoformat()
 
-    # 이동평균선 테이블에 post api
     logger.info(f"이동평균선 계산 완료. type: {type}")
     """
     {
         'type': 'hour4', 
         'oldest_price': 155800000.0, 
         'ma': 146933033.33, 
-        'last_updated': datetime.datetime(2025, 2, 27, 13, 57, 30, 728432, tzinfo=datetime.timezone.utc)
+        'last_updated': '2025-03-02T14:05:57.681533+00:00'
     }
     """
-    print(result)
+    return result
