@@ -46,7 +46,7 @@ logger = set_logger()
 #     }
 
 
-def moving_average(candles, period):
+def moving_average(candles, type):
     """
     캔들 데이터를 이용해 이동평균선을 계산하는 함수
 
@@ -61,16 +61,16 @@ def moving_average(candles, period):
     # 캔들 기준 시각(UTC 기준) 포맷: yyyy-MM-dd'T'HH:mm:ss
     CANDLE_DATETIME_UTC = "candle_date_time_utc"
 
-    type = None
+    period = None
 
-    if period == 200:
-        type = "day"
-    if period == 52:
-        type = "week"
-    if period == 180:
-        type = "hour4"
-    if period == 168:
-        type = "hour1"
+    if type == "day":
+        period = 200
+    if type == "week":
+        period = 52
+    if type == "hour4":
+        period = 180
+    if type == "hour1":
+        period = 168
 
     result = {"type": type}
 
