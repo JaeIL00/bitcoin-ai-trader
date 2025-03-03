@@ -5,6 +5,10 @@ from sqlalchemy.orm import Session
 from schemas import MovingAverageRequest, RsiRequest
 from database import get_db, engine, Base
 from models import MovingAverage, Rsi
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ContentInput(BaseModel):
@@ -32,6 +36,28 @@ async def create_moving_average(
             type=body.type,
             oldest_price=body.oldest_price,
             ma=body.ma,
+            ma_3=body.ma_3,
+            ma_7=body.ma_7,
+            ma_10=body.ma_10,
+            ma_12=body.ma_12,
+            ma_14=body.ma_14,
+            ma_24=body.ma_24,
+            ma_25=body.ma_25,
+            ma_26=body.ma_26,
+            ma_30=body.ma_30,
+            ma_36=body.ma_36,
+            ma_45=body.ma_45,
+            ma_48=body.ma_48,
+            ma_50=body.ma_50,
+            ma_52=body.ma_52,
+            ma_60=body.ma_60,
+            ma_90=body.ma_90,
+            ma_100=body.ma_100,
+            ma_200=body.ma_200,
+            macd_short_period=body.macd_short_period,
+            macd_long_period=body.macd_long_period,
+            signal_period=body.signal_period,
+            ma_values=body.ma_values,
             last_updated=body.last_updated,
         )
 
@@ -42,6 +68,7 @@ async def create_moving_average(
         return {"success": True}
     except Exception as e:
         db.rollback()
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"데이터 저장 실패: {str(e)}")
 
 
@@ -65,6 +92,7 @@ async def create_rsi(body: RsiRequest, db: Session = Depends(get_db)):
         return {"success": True}
     except Exception as e:
         db.rollback()
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"데이터 저장 실패: {str(e)}")
 
 

@@ -16,18 +16,42 @@ class MovingAverage(Base):
         Float,
         nullable=False,
     )
-    ma = Column(
-        Float,
-        nullable=False,
-    )
-    last_updated = Column(
-        DateTime(timezone=True),
-        nullable=False,
-    )
+
+    # 기존 열 유지 (호환성)
+    ma = Column(Float, nullable=False)
+
+    # 추가 이동평균 값들
+    ma_3 = Column(Float, nullable=True)
+    ma_7 = Column(Float, nullable=True)
+    ma_10 = Column(Float, nullable=True)
+    ma_12 = Column(Float, nullable=True)
+    ma_14 = Column(Float, nullable=True)
+    ma_24 = Column(Float, nullable=True)
+    ma_25 = Column(Float, nullable=True)
+    ma_26 = Column(Float, nullable=True)
+    ma_30 = Column(Float, nullable=True)
+    ma_36 = Column(Float, nullable=True)
+    ma_45 = Column(Float, nullable=True)
+    ma_48 = Column(Float, nullable=True)
+    ma_50 = Column(Float, nullable=True)
+    ma_52 = Column(Float, nullable=True)
+    ma_60 = Column(Float, nullable=True)
+    ma_90 = Column(Float, nullable=True)
+    ma_100 = Column(Float, nullable=True)
+    ma_200 = Column(Float, nullable=True)
+
+    # MACD 관련 필드
+    macd_short_period = Column(Integer, nullable=False)
+    macd_long_period = Column(Integer, nullable=False)
+    signal_period = Column(Integer, nullable=False)
+
+    # 시계열 데이터를 JSON으로 저장
+    ma_values = Column(JSON, nullable=False)
+
+    # 기존 시간 필드
+    last_updated = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        nullable=False,
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
 

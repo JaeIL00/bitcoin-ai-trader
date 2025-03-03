@@ -24,5 +24,5 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
-    except:
-        db.close()
+    finally:  # 예외 발생 여부와 상관없이 항상 실행
+        db.close()  # 커넥션 정리

@@ -55,7 +55,7 @@ def get_candle_api_call(url, count):
 
         return response.json()
     except Exception as e:
-        logger.error(f"캔들 조회 api({url}) 에러: {e}")
+        logger.error(f"캔들 조회 api({url}) 실패: {e}")
         return None
 
 
