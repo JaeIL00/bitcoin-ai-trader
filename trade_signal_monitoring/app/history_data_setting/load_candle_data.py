@@ -24,9 +24,21 @@ def insert_moving_average(body):
 
         response.raise_for_status()
         logger.info(f"과거 이동평균선 인서트 완료")
-        logger.info(body)
     except Exception as e:
         logger.error(f"과거 이동평균선 인서트 실패: {e}")
+
+
+def insert_rsi(body):
+    try:
+        response = requests.post(
+            "http://backend:8000/api/rsi",
+            json=body,
+        )
+
+        response.raise_for_status()
+        logger.info(f"과거 RSI 인서트 완료")
+    except Exception as e:
+        logger.error(f"과거 RSI 인서트 실패: {e}")
 
 
 def get_candle_api_call(url, count):
@@ -57,6 +69,7 @@ def get_day_candle():
     insert_moving_average(moving_average_result)
 
     rsi_result = rsi(candles, type)
+    insert_rsi(rsi_result)
 
 
 def get_week_candle():
@@ -69,6 +82,7 @@ def get_week_candle():
     insert_moving_average(moving_average_result)
 
     rsi_result = rsi(candles, type)
+    insert_rsi(rsi_result)
 
 
 def get_hour_4_candle():
@@ -81,6 +95,7 @@ def get_hour_4_candle():
     insert_moving_average(moving_average_result)
 
     rsi_result = rsi(candles, type)
+    insert_rsi(rsi_result)
 
 
 def get_hour_1_candle():
@@ -93,6 +108,7 @@ def get_hour_1_candle():
     insert_moving_average(moving_average_result)
 
     rsi_result = rsi(candles, type)
+    insert_rsi(rsi_result)
 
 
 def get_candle_process():

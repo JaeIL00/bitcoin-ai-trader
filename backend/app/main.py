@@ -2,9 +2,9 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from schemas import MovingAverageRequest
+from schemas import MovingAverageRequest, RsiRequest
 from database import get_db, engine, Base
-from models import MovingAverage
+from models import MovingAverage, Rsi
 
 
 class ContentInput(BaseModel):
@@ -32,6 +32,29 @@ async def create_moving_average(
             type=body.type,
             oldest_price=body.oldest_price,
             ma=body.ma,
+            last_updated=body.last_updated,
+        )
+
+        # DB에 저장
+        db.add(db_item)
+        db.commit()
+
+        return {"success": True}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"데이터 저장 실패: {str(e)}")
+
+
+@app.post("/api/rsi")
+async def create_rsi(body: RsiRequest, db: Session = Depends(get_db)):
+    try:
+        timestamps_json = [ts.isoformat() for ts in body.timestamps]
+        # 입력 데이터를 DB 모델로 변환
+        db_item = Rsi(
+            type=body.type,
+            rsi_values=body.rsi_values,
+            timestamps=timestamps_json,
+            current_rsi=body.current_rsi,
             last_updated=body.last_updated,
         )
 
