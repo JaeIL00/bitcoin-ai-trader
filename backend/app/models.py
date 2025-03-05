@@ -90,6 +90,11 @@ class Macd(Base):
     __tablename__ = "macd"
 
     id = Column(Integer, primary_key=True, index=True)
+    type = Column(
+        Enum("day", "week", "hour4", "hour1", name="timeframe_type"),
+        index=True,
+        nullable=False,
+    )
     dates = Column(
         JSON,
         nullable=False,

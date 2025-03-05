@@ -106,6 +106,7 @@ class RsiRequest(BaseModel):
 
 
 class MacdRequest(BaseModel):
+    type: TimeFrameType = Field(..., description="타임프레임 (day, week, hour4, hour1)")
     dates: List[datetime] = Field(..., description="각 값에 해당하는 타임스탬프 리스트")
     macd_line: List[float] = Field(..., description="MACD 라인 값들의 리스트")
     signal_line: List[float] = Field(..., description="시그널 라인 값들의 리스트")
@@ -114,6 +115,7 @@ class MacdRequest(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
+                "type": "hour4",
                 "dates": [
                     "2025-02-28 00:00:00",
                     "2025-03-01 00:00:00",
