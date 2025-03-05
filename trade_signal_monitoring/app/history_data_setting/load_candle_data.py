@@ -3,8 +3,9 @@ from datetime import datetime
 import requests
 import multiprocessing
 
-from .calculation.moving_average import moving_average
 from .calculation.rsi import rsi
+from .calculation.macd import macd
+from .calculation.moving_average import moving_average
 from log_generator import set_logger
 
 logger = set_logger()
@@ -26,6 +27,7 @@ def insert_moving_average(body):
         logger.info(f"과거 이동평균선 인서트 완료")
     except Exception as e:
         logger.error(f"과거 이동평균선 인서트 실패: {e}")
+        logger.error(body)
 
 
 def insert_rsi(body):
@@ -39,13 +41,28 @@ def insert_rsi(body):
         logger.info(f"과거 RSI 인서트 완료")
     except Exception as e:
         logger.error(f"과거 RSI 인서트 실패: {e}")
+        logger.error(body)
+
+
+def insert_macd(body):
+    try:
+        response = requests.post(
+            "http://backend:8000/api/macd",
+            json=body,
+        )
+
+        response.raise_for_status()
+        logger.info(f"과거 MACD 인서트 완료")
+    except Exception as e:
+        logger.error(f"과거 MACD 인서트 실패: {e}")
+        logger.error(body)
 
 
 def get_candle_api_call(url, count):
     try:
         now = datetime.now()
         formatted_date = now.strftime("%Y-%m-%d %H:%M:%S")
-        print(formatted_date)
+
         params = {"market": "KRW-BTC", "count": count, "to": formatted_date}
         headers = {"accept": "application/json"}
 
@@ -67,6 +84,8 @@ def get_day_candle():
         return
     moving_average_result = moving_average(candles=candles, type=type)
     insert_moving_average(moving_average_result)
+    macd_result = macd(moving_average_result["ma_values"])
+    insert_macd(macd_result)
 
     rsi_result = rsi(candles, type)
     insert_rsi(rsi_result)
@@ -80,6 +99,8 @@ def get_week_candle():
         return
     moving_average_result = moving_average(candles=candles, type=type)
     insert_moving_average(moving_average_result)
+    macd_result = macd(moving_average_result["ma_values"])
+    insert_macd(macd_result)
 
     rsi_result = rsi(candles, type)
     insert_rsi(rsi_result)
@@ -93,6 +114,8 @@ def get_hour_4_candle():
         return
     moving_average_result = moving_average(candles=candles, type=type)
     insert_moving_average(moving_average_result)
+    macd_result = macd(moving_average_result["ma_values"])
+    insert_macd(macd_result)
 
     rsi_result = rsi(candles, type)
     insert_rsi(rsi_result)
@@ -106,6 +129,8 @@ def get_hour_1_candle():
         return
     moving_average_result = moving_average(candles=candles, type=type)
     insert_moving_average(moving_average_result)
+    macd_result = macd(moving_average_result["ma_values"])
+    insert_macd(macd_result)
 
     rsi_result = rsi(candles, type)
     insert_rsi(rsi_result)

@@ -84,3 +84,29 @@ class Rsi(Base):
         server_default=func.now(),
         nullable=False,
     )
+
+
+class Macd(Base):
+    __tablename__ = "macd"
+
+    id = Column(Integer, primary_key=True, index=True)
+    dates = Column(
+        JSON,
+        nullable=False,
+        comment="각 값에 해당하는 타임스탬프 리스트",
+    )
+    macd_line = Column(
+        JSON,
+        nullable=False,
+        comment="MACD 라인 값들의 리스트",
+    )
+    signal_line = Column(
+        JSON,
+        nullable=False,
+        comment="시그널 라인 값들의 리스트",
+    )
+    histogram = Column(
+        JSON,
+        nullable=False,
+        comment="히스토그램 값들의 리스트",
+    )
