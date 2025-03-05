@@ -101,6 +101,7 @@ async def create_macd(body: MacdRequest, db: Session = Depends(get_db)):
     try:
         dates_json = [date.isoformat() for date in body.dates]
         db_item = Macd(
+            type=body.type,
             dates=dates_json,
             macd_line=body.macd_line,
             signal_line=body.signal_line,

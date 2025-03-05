@@ -85,6 +85,7 @@ def get_day_candle():
     moving_average_result = moving_average(candles=candles, type=type)
     insert_moving_average(moving_average_result)
     macd_result = macd(moving_average_result["ma_values"])
+    macd_result["type"] = type
     insert_macd(macd_result)
 
     rsi_result = rsi(candles, type)
@@ -100,6 +101,7 @@ def get_week_candle():
     moving_average_result = moving_average(candles=candles, type=type)
     insert_moving_average(moving_average_result)
     macd_result = macd(moving_average_result["ma_values"])
+    macd_result["type"] = type
     insert_macd(macd_result)
 
     rsi_result = rsi(candles, type)
@@ -115,6 +117,7 @@ def get_hour_4_candle():
     moving_average_result = moving_average(candles=candles, type=type)
     insert_moving_average(moving_average_result)
     macd_result = macd(moving_average_result["ma_values"])
+    macd_result["type"] = type
     insert_macd(macd_result)
 
     rsi_result = rsi(candles, type)
@@ -130,6 +133,7 @@ def get_hour_1_candle():
     moving_average_result = moving_average(candles=candles, type=type)
     insert_moving_average(moving_average_result)
     macd_result = macd(moving_average_result["ma_values"])
+    macd_result["type"] = type
     insert_macd(macd_result)
 
     rsi_result = rsi(candles, type)
