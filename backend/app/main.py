@@ -2,9 +2,9 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from schemas import MovingAverageRequest, RsiRequest
+from schemas import MacdRequest, MovingAverageRequest, RsiRequest
 from database import get_db, engine, Base
-from models import MovingAverage, Rsi
+from models import Macd, MovingAverage, Rsi
 import traceback
 import logging
 
@@ -83,6 +83,28 @@ async def create_rsi(body: RsiRequest, db: Session = Depends(get_db)):
             timestamps=timestamps_json,
             current_rsi=body.current_rsi,
             last_updated=body.last_updated,
+        )
+
+        # DB에 저장
+        db.add(db_item)
+        db.commit()
+
+        return {"success": True}
+    except Exception as e:
+        db.rollback()
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"데이터 저장 실패: {str(e)}")
+
+
+@app.post("/api/macd")
+async def create_macd(body: MacdRequest, db: Session = Depends(get_db)):
+    try:
+        dates_json = [date.isoformat() for date in body.dates]
+        db_item = Macd(
+            dates=dates_json,
+            macd_line=body.macd_line,
+            signal_line=body.signal_line,
+            histogram=body.histogram,
         )
 
         # DB에 저장

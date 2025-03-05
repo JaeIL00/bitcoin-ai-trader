@@ -103,3 +103,36 @@ class RsiRequest(BaseModel):
                 "last_updated": "2025-03-02T12:39:44.831594+00:00",
             }
         }
+
+
+class MacdRequest(BaseModel):
+    dates: List[datetime] = Field(..., description="각 값에 해당하는 타임스탬프 리스트")
+    macd_line: List[float] = Field(..., description="MACD 라인 값들의 리스트")
+    signal_line: List[float] = Field(..., description="시그널 라인 값들의 리스트")
+    histogram: List[float] = Field(..., description="히스토그램 값들의 리스트")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "dates": [
+                    "2025-02-28 00:00:00",
+                    "2025-03-01 00:00:00",
+                    "2025-03-02 00:00:00",
+                    "2025-03-03 00:00:00",
+                    "2025-03-04 00:00:00",
+                    "2025-03-05 00:00:00",
+                ],
+                "macd_line": [
+                    -4629910.25,
+                    -4513974.36,
+                ],
+                "signal_line": [
+                    -4629910.25,
+                    -4513974.36,
+                ],
+                "histogram": [
+                    -4629910.25,
+                    -4513974.36,
+                ],
+            }
+        }
