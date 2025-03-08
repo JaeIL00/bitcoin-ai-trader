@@ -11,6 +11,39 @@ class TimeFrameType(str, Enum):
     HOUR1 = "hour1"
 
 
+class MovingAverageResponse(BaseModel):
+    id: int
+    type: TimeFrameType
+    ma: float
+    ma_3: Optional[float] = None
+    ma_7: Optional[float] = None
+    ma_10: Optional[float] = None
+    ma_12: Optional[float] = None
+    ma_14: Optional[float] = None
+    ma_24: Optional[float] = None
+    ma_25: Optional[float] = None
+    ma_26: Optional[float] = None
+    ma_30: Optional[float] = None
+    ma_36: Optional[float] = None
+    ma_45: Optional[float] = None
+    ma_48: Optional[float] = None
+    ma_50: Optional[float] = None
+    ma_52: Optional[float] = None
+    ma_60: Optional[float] = None
+    ma_90: Optional[float] = None
+    ma_100: Optional[float] = None
+    ma_200: Optional[float] = None
+    macd_short_period: int
+    macd_long_period: int
+    signal_period: int
+    ma_values: Dict[str, List[Dict[str, Any]]]
+    last_updated: datetime
+    created_at: datetime
+
+    class Config:
+        orm_mode = True  # ORM 모델을 Pydantic 모델로 변환하기 위한 설정
+
+
 class MovingAverageRequest(BaseModel):
     type: TimeFrameType = Field(..., description="타임프레임 (day, week, hour4, hour1)")
 

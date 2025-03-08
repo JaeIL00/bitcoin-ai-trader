@@ -2,9 +2,18 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from schemas import MacdRequest, MovingAverageRequest, RsiRequest
+from schemas import (
+    MacdRequest,
+    MovingAverageRequest,
+    MovingAverageResponse,
+    RsiRequest,
+    TimeFrameType,
+)
 from database import get_db, engine, Base
 from models import Macd, MovingAverage, Rsi
+from typing import List, Dict, Any, Optional
+
+
 import traceback
 import logging
 
@@ -24,6 +33,38 @@ app = FastAPI()
 @app.get("/")
 async def redirect_root_to_docs():
     return RedirectResponse(url="/docs", status_code=303)
+
+
+@app.get("/api/moving-averages", response_model=List[MovingAverageResponse])
+async def get_moving_averages(
+    type: Optional[TimeFrameType], db: Session = Depends(get_db)
+):
+    """
+    이동평균 데이터를 조회합니다.
+    type 파라미터를 사용하여 특정 타임프레임의 데이터만 필터링할 수 있습니다.
+    """
+    try:
+        # 쿼리 작성
+        query = db.query(MovingAverage)
+
+        # 타입 필터 적용
+        if type:
+            query = query.filter(MovingAverage.type == type)
+
+        # 최신 데이터 우선 정렬
+        query = query.order_by(MovingAverage.last_updated.desc())
+
+        # 데이터 조회
+        results = query.all()
+
+        # 결과가 없으면 빈 리스트 반환
+        if not results:
+            return []
+
+        return results
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"데이터 조회 실패: {str(e)}")
 
 
 @app.post("/api/moving-averages")
