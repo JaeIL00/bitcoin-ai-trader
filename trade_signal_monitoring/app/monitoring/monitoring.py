@@ -1,3 +1,4 @@
+from init_setting_data.init_data import start_get_candle_process
 import websockets
 import asyncio
 import json
@@ -46,3 +47,11 @@ async def ws():
 
 def get_trade_ws():
     asyncio.run(ws())
+
+
+def init_data():
+    start_get_candle_process()
+
+
+def monitoring():
+    init_data()

@@ -140,7 +140,7 @@ def get_hour_1_candle():
     insert_rsi(rsi_result)
 
 
-def get_candle_process():
+def start_get_candle_process():
     candle_day_p = multiprocessing.Process(target=get_day_candle)
     candle_week_p = multiprocessing.Process(target=get_week_candle)
     candle_hour_4_p = multiprocessing.Process(target=get_hour_4_candle)
@@ -149,6 +149,11 @@ def get_candle_process():
     candle_week_p.start()
     candle_hour_4_p.start()
     candle_hour_1_p.start()
+
+    candle_day_p.join()
+    candle_week_p.join()
+    candle_hour_4_p.join()
+    candle_hour_1_p.join()
 
 
 # if __name__ == "__main__":
