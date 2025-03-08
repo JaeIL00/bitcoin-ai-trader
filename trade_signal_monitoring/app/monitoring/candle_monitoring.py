@@ -128,7 +128,7 @@ def start_week_day_schedule(stop_event):
     logger.info("week_day 모니터링 종료")
 
 
-def start_moving_average_update_monitoring():
+def start_candle_monitoring():
     stop_event = Event()
     hour1_p = Process(
         target=update_ma,
