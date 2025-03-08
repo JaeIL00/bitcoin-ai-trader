@@ -15,7 +15,34 @@ def get_moving_average(type):
         return response.json()
     except Exception as e:
         logger.error(f"이동평균선 조회 실패: {e}")
-        return None
+        raise Exception(f"이동평균선 조회 호출 중 오류 발생: {e}") from e
+
+
+def get_rsi(type):
+    try:
+        response = requests.get(f"http://backend:8000/api/rsi/{type}")
+
+        response.raise_for_status()
+        logger.info(f"RSI 조회 완료")
+        return response.json()
+    except Exception as e:
+        logger.error(f"RSI 조회 실패: {e}")
+        raise Exception(f"RSI 조회 호출 중 오류 발생: {e}") from e
+
+
+def put_rsi(type, body):
+    try:
+        response = requests.put(
+            f"http://backend:8000/api/rsi/{type}",
+            json=body,
+        )
+
+        response.raise_for_status()
+        logger.info(f"RSI 수정 완료")
+    except Exception as e:
+        logger.error(f"RSI 수정 실패: {e}")
+        logger.error(body)
+        raise Exception(f"RSI 수정 호출 중 오류 발생: {e}") from e
 
 
 def create_moving_average(body):
@@ -30,6 +57,7 @@ def create_moving_average(body):
     except Exception as e:
         logger.error(f"이동평균선 생성 실패: {e}")
         logger.error(body)
+        raise Exception(f"이동평균선 생성 호출 중 오류 발생: {e}") from e
 
 
 def put_moving_average(type, body):
@@ -44,6 +72,7 @@ def put_moving_average(type, body):
     except Exception as e:
         logger.error(f"이동평균선 수정 실패: {e}")
         logger.error(body)
+        raise Exception(f"이동평균선 수정 호출 중 오류 발생: {e}") from e
 
 
 def create_rsi(body):
@@ -54,10 +83,11 @@ def create_rsi(body):
         )
 
         response.raise_for_status()
-        logger.info(f"과거 RSI 인서트 완료")
+        logger.info(f"RSI 생성 완료")
     except Exception as e:
-        logger.error(f"과거 RSI 인서트 실패: {e}")
+        logger.error(f"RSI 생성 실패: {e}")
         logger.error(body)
+        raise Exception(f"RSI 생성 호출 중 오류 발생: {e}") from e
 
 
 def create_macd(body):
@@ -68,10 +98,26 @@ def create_macd(body):
         )
 
         response.raise_for_status()
-        logger.info(f"과거 MACD 인서트 완료")
+        logger.info(f"MACD 생성 완료")
     except Exception as e:
-        logger.error(f"과거 MACD 인서트 실패: {e}")
+        logger.error(f"MACD 생성 실패: {e}")
         logger.error(body)
+        raise Exception(f"MACD 생성 호출 중 오류 발생: {e}") from e
+
+
+def put_macd(type, body):
+    try:
+        response = requests.put(
+            f"http://backend:8000/api/macd/{type}",
+            json=body,
+        )
+
+        response.raise_for_status()
+        logger.info(f"macd 수정 완료")
+    except Exception as e:
+        logger.error(f"macd 수정 실패: {e}")
+        logger.error(body)
+        raise Exception(f"macd 수정 호출 중 오류 발생: {e}") from e
 
 
 def get_candle_api_call(url, count):
@@ -89,4 +135,4 @@ def get_candle_api_call(url, count):
         return response.json()
     except Exception as e:
         logger.error(f"캔들 조회 api({url}) 실패: {e}")
-        return None
+        raise Exception(f"캔들 조회({url}) 호출 중 오류 발생: {e}") from e

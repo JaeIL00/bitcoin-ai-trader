@@ -294,6 +294,7 @@ async def create_macd(body: MacdRequest, db: Session = Depends(get_db)):
             macd_line=body.macd_line,
             signal_line=body.signal_line,
             histogram=body.histogram,
+            last_updated=body.last_updated,
         )
 
         # DB에 저장
@@ -372,6 +373,7 @@ async def update_macd_by_type(
             macd_line=body.macd_line,
             signal_line=body.signal_line,
             histogram=body.histogram,
+            last_updated=body.last_updated,
         )
 
         db.add(new_record)

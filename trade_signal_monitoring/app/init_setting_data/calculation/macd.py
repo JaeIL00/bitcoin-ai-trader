@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import pandas as pd
 from log_generator import set_logger
 
 logger = set_logger()
 
 
-def macd(ma_values_data):
+def macd(type, ma_values_data):
     """
     DB에 저장된 이동평균 데이터를 활용해 MACD를 계산하는 함수
 
@@ -66,12 +66,16 @@ def macd(ma_values_data):
 
     iso_dates = [dt.isoformat() for dt in datetime_dates]
 
+    last_updated = datetime.now(timezone.utc).isoformat()
+
     # 결과 반환
     result = {
+        "type": type,
         "dates": iso_dates,
         "macd_line": merged_df["macd"].tolist(),
         "signal_line": merged_df["signal"].tolist(),
         "histogram": merged_df["histogram"].tolist(),
+        "last_updated": last_updated,
     }
 
     logger.info(f"MACD 계산 완료.")
