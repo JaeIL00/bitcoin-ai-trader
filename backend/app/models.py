@@ -12,10 +12,6 @@ class MovingAverage(Base):
         index=True,
         nullable=False,
     )
-    oldest_price = Column(
-        Float,
-        nullable=False,
-    )
 
     # 기존 열 유지 (호환성)
     ma = Column(Float, nullable=False)
@@ -114,4 +110,13 @@ class Macd(Base):
         JSON,
         nullable=False,
         comment="히스토그램 값들의 리스트",
+    )
+    last_updated = Column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
     )

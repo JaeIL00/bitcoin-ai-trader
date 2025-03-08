@@ -11,9 +11,41 @@ class TimeFrameType(str, Enum):
     HOUR1 = "hour1"
 
 
+class MovingAverageResponse(BaseModel):
+    id: int
+    type: TimeFrameType
+    ma: float
+    ma_3: Optional[float] = None
+    ma_7: Optional[float] = None
+    ma_10: Optional[float] = None
+    ma_12: Optional[float] = None
+    ma_14: Optional[float] = None
+    ma_24: Optional[float] = None
+    ma_25: Optional[float] = None
+    ma_26: Optional[float] = None
+    ma_30: Optional[float] = None
+    ma_36: Optional[float] = None
+    ma_45: Optional[float] = None
+    ma_48: Optional[float] = None
+    ma_50: Optional[float] = None
+    ma_52: Optional[float] = None
+    ma_60: Optional[float] = None
+    ma_90: Optional[float] = None
+    ma_100: Optional[float] = None
+    ma_200: Optional[float] = None
+    macd_short_period: int
+    macd_long_period: int
+    signal_period: int
+    ma_values: Dict[str, List[Dict[str, Any]]]
+    last_updated: datetime
+    created_at: datetime
+
+    class Config:
+        orm_mode = True  # ORM 모델을 Pydantic 모델로 변환하기 위한 설정
+
+
 class MovingAverageRequest(BaseModel):
     type: TimeFrameType = Field(..., description="타임프레임 (day, week, hour4, hour1)")
-    oldest_price: float = Field(..., description="최초 가격")
 
     # 기존 필드 (호환성 유지)
     ma: float = Field(..., description="기본 이동평균값")
@@ -54,7 +86,6 @@ class MovingAverageRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "type": "hour4",
-                "oldest_price": 156451000.0,
                 "ma": 143623561.11,
                 "ma_7": 146615714.29,
                 "ma_12": 145969250.0,
@@ -105,12 +136,26 @@ class RsiRequest(BaseModel):
         }
 
 
+class RsiResponse(BaseModel):
+    id: int
+    type: TimeFrameType
+    rsi_values: List[float]
+    timestamps: List[datetime]
+    current_rsi: float
+    last_updated: datetime
+    created_at: datetime
+
+    class Config:
+        orm_mode = True  # ORM 모델을 Pydantic 모델로 변환하기 위한 설정
+
+
 class MacdRequest(BaseModel):
     type: TimeFrameType = Field(..., description="타임프레임 (day, week, hour4, hour1)")
     dates: List[datetime] = Field(..., description="각 값에 해당하는 타임스탬프 리스트")
     macd_line: List[float] = Field(..., description="MACD 라인 값들의 리스트")
     signal_line: List[float] = Field(..., description="시그널 라인 값들의 리스트")
     histogram: List[float] = Field(..., description="히스토그램 값들의 리스트")
+    last_updated: datetime = Field(..., description="마지막 macd 시간")
 
     class Config:
         json_schema_extra = {
@@ -138,3 +183,17 @@ class MacdRequest(BaseModel):
                 ],
             }
         }
+
+
+class MacdResponse(BaseModel):
+    id: int
+    type: TimeFrameType
+    dates: List[datetime]
+    macd_line: List[float]
+    signal_line: List[float]
+    histogram: List[float]
+    last_updated: datetime
+    created_at: datetime
+
+    class Config:
+        orm_mode = True  # ORM 모델을 Pydantic 모델로 변환하기 위한 설정

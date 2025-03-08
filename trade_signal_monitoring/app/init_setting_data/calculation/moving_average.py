@@ -24,28 +24,24 @@ def moving_average(candles, type):
             "macd_long": 26,
             "macd_short": 12,
             "signal": 9,
-            "add_periods": [3, 7, 14, 25, 50, 100, 200],  # 가상화폐 특화 MA 기간
         },
         "week": {
             "long_term": 52,
             "macd_long": 26,
             "macd_short": 12,
             "signal": 9,
-            "add_periods": [7, 26, 52],  # 주간 추세 분석 기간
         },
         "hour4": {
             "long_term": 90,  # 약 3개월로 조정
             "macd_long": 26,
             "macd_short": 12,
             "signal": 9,
-            "add_periods": [10, 30, 45, 60, 90],  # 4시간 봉 다양한 분석 기간
         },
         "hour1": {
             "long_term": 84,  # 약 3.5일로 조정
             "macd_long": 26,
             "macd_short": 12,
             "signal": 9,
-            "add_periods": [3, 12, 24, 36, 48],  # 1시간 봉 세분화된 기간
         },
     }
 
@@ -76,10 +72,6 @@ def moving_average(candles, type):
 
     # 시간순으로 정렬 (과거 → 현재)
     df = df.sort_values("candle_date_time_utc")
-
-    # 최초 캔들 가격 저장
-    if not df.empty:
-        result["oldest_price"] = df.iloc[0]["trade_price"]
 
     # 모든 기간에 대해 이동평균 계산
     for period in sorted(all_periods):
