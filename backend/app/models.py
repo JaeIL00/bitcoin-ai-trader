@@ -12,10 +12,6 @@ class MovingAverage(Base):
         index=True,
         nullable=False,
     )
-    oldest_price = Column(
-        Float,
-        nullable=False,
-    )
 
     # 기존 열 유지 (호환성)
     ma = Column(Float, nullable=False)

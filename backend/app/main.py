@@ -34,7 +34,6 @@ async def create_moving_average(
         # 입력 데이터를 DB 모델로 변환
         db_item = MovingAverage(
             type=body.type,
-            oldest_price=body.oldest_price,
             ma=body.ma,
             ma_3=body.ma_3,
             ma_7=body.ma_7,

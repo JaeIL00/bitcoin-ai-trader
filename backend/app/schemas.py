@@ -13,7 +13,6 @@ class TimeFrameType(str, Enum):
 
 class MovingAverageRequest(BaseModel):
     type: TimeFrameType = Field(..., description="타임프레임 (day, week, hour4, hour1)")
-    oldest_price: float = Field(..., description="최초 가격")
 
     # 기존 필드 (호환성 유지)
     ma: float = Field(..., description="기본 이동평균값")
@@ -54,7 +53,6 @@ class MovingAverageRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "type": "hour4",
-                "oldest_price": 156451000.0,
                 "ma": 143623561.11,
                 "ma_7": 146615714.29,
                 "ma_12": 145969250.0,
