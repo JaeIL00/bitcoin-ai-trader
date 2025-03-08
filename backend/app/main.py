@@ -35,33 +35,29 @@ async def redirect_root_to_docs():
     return RedirectResponse(url="/docs", status_code=303)
 
 
-@app.get("/api/moving-averages", response_model=List[MovingAverageResponse])
-async def get_moving_averages(
-    type: Optional[TimeFrameType], db: Session = Depends(get_db)
+@app.get("/api/moving-averages/{type}", response_model=MovingAverageResponse)
+async def get_moving_average_by_type(
+    type: TimeFrameType, db: Session = Depends(get_db)
 ):
     """
     이동평균 데이터를 조회합니다.
     type 파라미터를 사용하여 특정 타임프레임의 데이터만 필터링할 수 있습니다.
     """
     try:
-        # 쿼리 작성
-        query = db.query(MovingAverage)
-
-        # 타입 필터 적용
-        if type:
-            query = query.filter(MovingAverage.type == type)
-
-        # 최신 데이터 우선 정렬
-        query = query.order_by(MovingAverage.last_updated.desc())
-
-        # 데이터 조회
-        results = query.all()
+        result = (
+            db.query(MovingAverage)
+            .filter(MovingAverage.type == type)
+            .order_by(MovingAverage.last_updated.desc())
+            .first()
+        )
 
         # 결과가 없으면 빈 리스트 반환
-        if not results:
-            return []
+        if not result:
+            raise HTTPException(
+                status_code=404, detail=f"{type} 타입의 데이터를 찾을 수 없습니다."
+            )
 
-        return results
+        return result
     except Exception as e:
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"데이터 조회 실패: {str(e)}")
@@ -110,6 +106,78 @@ async def create_moving_average(
         db.rollback()
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"데이터 저장 실패: {str(e)}")
+
+
+@app.put("/api/moving-averages/{type}", response_model=Dict[str, Any])
+async def update_moving_average_by_type(
+    type: TimeFrameType, body: MovingAverageRequest, db: Session = Depends(get_db)
+):
+    """
+    특정 타입의 이동평균 데이터를 업데이트합니다.
+    URL 경로의 type과 일치하는 기존 데이터를 요청 본문의 데이터로 대체합니다.
+    """
+    try:
+        # URL 경로의 type과 요청 본문의 type이 일치하는지 확인
+        if type != body.type:
+            raise HTTPException(
+                status_code=400,
+                detail="경로의 type과 요청 본문의 type이 일치해야 합니다.",
+            )
+
+        # 동일한 type의 기존 데이터 찾기
+        existing_records = (
+            db.query(MovingAverage).filter(MovingAverage.type == type).all()
+        )
+
+        # 트랜잭션 시작
+        db.begin_nested()  # savepoint 생성
+
+        # 기존 레코드가 있으면 모두 삭제
+        if existing_records:
+            for record in existing_records:
+                db.delete(record)
+
+        # 새 데이터 생성 및 저장
+        new_record = MovingAverage(
+            type=type,
+            ma=body.ma,
+            ma_3=body.ma_3,
+            ma_7=body.ma_7,
+            ma_10=body.ma_10,
+            ma_12=body.ma_12,
+            ma_14=body.ma_14,
+            ma_24=body.ma_24,
+            ma_25=body.ma_25,
+            ma_26=body.ma_26,
+            ma_30=body.ma_30,
+            ma_36=body.ma_36,
+            ma_45=body.ma_45,
+            ma_48=body.ma_48,
+            ma_50=body.ma_50,
+            ma_52=body.ma_52,
+            ma_60=body.ma_60,
+            ma_90=body.ma_90,
+            ma_100=body.ma_100,
+            ma_200=body.ma_200,
+            macd_short_period=body.macd_short_period,
+            macd_long_period=body.macd_long_period,
+            signal_period=body.signal_period,
+            ma_values=body.ma_values,
+            last_updated=body.last_updated,
+        )
+
+        db.add(new_record)
+        db.commit()
+
+        # 처리 결과 반환
+        return {
+            "success": True,
+        }
+
+    except Exception as e:
+        # 오류 발생 시 롤백
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"데이터 업데이트 실패: {str(e)}")
 
 
 @app.post("/api/rsi")
