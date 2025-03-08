@@ -213,7 +213,7 @@ async def create_rsi(body: RsiRequest, db: Session = Depends(get_db)):
 
 
 @app.put("/api/rsi/{type}", response_model=Dict[str, Any])
-async def update_rsi(
+async def update_rsi_by_type(
     type: TimeFrameType, body: RsiRequest, db: Session = Depends(get_db)
 ):
     try:
@@ -255,7 +255,7 @@ async def update_rsi(
 
 
 @app.get("/api/rsi/{type}")
-async def get_rsi(type: TimeFrameType, db: Session = Depends(get_db)):
+async def get_rsi_by_type(type: TimeFrameType, db: Session = Depends(get_db)):
     try:
         result = (
             db.query(Rsi)
@@ -300,6 +300,87 @@ async def create_macd(body: MacdRequest, db: Session = Depends(get_db)):
         logger.error(traceback.format_exc())
         raise HTTPException(
             status_code=500, detail=f"madc {body.type} 데이터 저장 실패: {str(e)}"
+        )
+
+
+@app.get("/api/macd/{type}", response_model=Macd)
+async def get_macd_by_type(type: TimeFrameType, db: Session = Depends(get_db)):
+    """
+    이동평균 데이터를 조회합니다.
+    type 파라미터를 사용하여 특정 타임프레임의 데이터만 필터링할 수 있습니다.
+    """
+    try:
+        result = (
+            db.query(Macd)
+            .filter(Macd.type == type)
+            .order_by(Macd.last_updated.desc())
+            .first()
+        )
+
+        # 결과가 없으면 빈 리스트 반환
+        if not result:
+            raise HTTPException(
+                status_code=404, detail=f"Macd {type} 타입의 데이터를 찾을 수 없습니다."
+            )
+
+        return result
+    except Exception as e:
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, detail=f"Macd {type} 데이터 조회 실패: {str(e)}"
+        )
+
+
+@app.put("/api/macd/{type}", response_model=Dict[str, Any])
+async def update_macd_by_type(
+    type: TimeFrameType, body: Macd, db: Session = Depends(get_db)
+):
+    """
+    특정 타입의 이동평균 데이터를 업데이트합니다.
+    URL 경로의 type과 일치하는 기존 데이터를 요청 본문의 데이터로 대체합니다.
+    """
+    try:
+        # URL 경로의 type과 요청 본문의 type이 일치하는지 확인
+        if type != body.type:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Macd 경로의 type:{type}과 요청 본문의 type:{body.type}이 일치해야 합니다.",
+            )
+
+        # 동일한 type의 기존 데이터 찾기
+        existing_records = db.query(Macd).filter(Macd.type == type).all()
+
+        # 트랜잭션 시작
+        db.begin_nested()  # savepoint 생성
+
+        # 기존 레코드가 있으면 모두 삭제
+        if existing_records:
+            for record in existing_records:
+                db.delete(record)
+
+        # 새 데이터 생성 및 저장
+        dates_json = [date.isoformat() for date in body.dates]
+        new_record = Macd(
+            type=body.type,
+            dates=dates_json,
+            macd_line=body.macd_line,
+            signal_line=body.signal_line,
+            histogram=body.histogram,
+        )
+
+        db.add(new_record)
+        db.commit()
+
+        # 처리 결과 반환
+        return {
+            "success": True,
+        }
+
+    except Exception as e:
+        # 오류 발생 시 롤백
+        db.rollback()
+        raise HTTPException(
+            status_code=500, detail=f"Macd {type} 데이터 업데이트 실패: {str(e)}"
         )
 
 
