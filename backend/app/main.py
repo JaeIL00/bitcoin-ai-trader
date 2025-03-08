@@ -54,13 +54,15 @@ async def get_moving_average_by_type(
         # 결과가 없으면 빈 리스트 반환
         if not result:
             raise HTTPException(
-                status_code=404, detail=f"{type} 타입의 데이터를 찾을 수 없습니다."
+                status_code=404, detail=f"ma {type} 타입의 데이터를 찾을 수 없습니다."
             )
 
         return result
     except Exception as e:
         logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"데이터 조회 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"ma {type} 데이터 조회 실패: {str(e)}"
+        )
 
 
 @app.post("/api/moving-averages")
@@ -105,7 +107,9 @@ async def create_moving_average(
     except Exception as e:
         db.rollback()
         logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"데이터 저장 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"ma {type} 데이터 저장 실패: {str(e)}"
+        )
 
 
 @app.put("/api/moving-averages/{type}", response_model=Dict[str, Any])
@@ -121,7 +125,7 @@ async def update_moving_average_by_type(
         if type != body.type:
             raise HTTPException(
                 status_code=400,
-                detail="경로의 type과 요청 본문의 type이 일치해야 합니다.",
+                detail=f"ma 경로의 type:{type}과 요청 본문의 type:{body.type}이 일치해야 합니다.",
             )
 
         # 동일한 type의 기존 데이터 찾기
@@ -177,7 +181,9 @@ async def update_moving_average_by_type(
     except Exception as e:
         # 오류 발생 시 롤백
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"데이터 업데이트 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"ma {type} 데이터 업데이트 실패: {str(e)}"
+        )
 
 
 @app.post("/api/rsi")
@@ -201,7 +207,75 @@ async def create_rsi(body: RsiRequest, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"데이터 저장 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"rsi {body.type} 데이터 저장 실패: {str(e)}"
+        )
+
+
+@app.put("/api/rsi/{type}", response_model=Dict[str, Any])
+async def update_rsi(
+    type: TimeFrameType, body: RsiRequest, db: Session = Depends(get_db)
+):
+    try:
+        if type != body.type:
+            raise HTTPException(
+                status_code=400,
+                detail="경로의 type과 요청 본문의 type이 일치해야 합니다.",
+            )
+
+        # 동일한 type의 기존 데이터 찾기
+        existing_records = db.query(Rsi).filter(Rsi.type == type).all()
+
+        # 기존 레코드가 있으면 모두 삭제
+        if existing_records:
+            for record in existing_records:
+                db.delete(record)
+
+        timestamps_json = [ts.isoformat() for ts in body.timestamps]
+        # 입력 데이터를 DB 모델로 변환
+        new_record = Rsi(
+            type=body.type,
+            rsi_values=body.rsi_values,
+            timestamps=timestamps_json,
+            current_rsi=body.current_rsi,
+            last_updated=body.last_updated,
+        )
+
+        # DB에 저장
+        db.add(new_record)
+        db.commit()
+
+        return {"success": True}
+    except Exception as e:
+        db.rollback()
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, detail=f"rsi {type} 데이터 업데이트 실패: {str(e)}"
+        )
+
+
+@app.get("/api/rsi/{type}")
+async def get_rsi(type: TimeFrameType, db: Session = Depends(get_db)):
+    try:
+        result = (
+            db.query(Rsi)
+            .filter(Rsi.type == type)
+            .order_by(Rsi.last_updated.desc())
+            .first()
+        )
+        # 결과가 없으면 빈 리스트 반환
+        if not result:
+            raise HTTPException(
+                status_code=404, detail=f"rsi {type} 타입의 데이터를 찾을 수 없습니다."
+            )
+
+        return result
+    except Exception as e:
+        db.rollback()
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, detail=f"rsi {type} 데이터 조회 실패: {str(e)}"
+        )
 
 
 @app.post("/api/macd")
@@ -224,7 +298,9 @@ async def create_macd(body: MacdRequest, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         logger.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"데이터 저장 실패: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"madc {body.type} 데이터 저장 실패: {str(e)}"
+        )
 
 
 if __name__ == "__main__":
