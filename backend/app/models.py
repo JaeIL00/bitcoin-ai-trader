@@ -111,3 +111,12 @@ class Macd(Base):
         nullable=False,
         comment="히스토그램 값들의 리스트",
     )
+    last_updated = Column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )

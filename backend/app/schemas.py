@@ -136,12 +136,26 @@ class RsiRequest(BaseModel):
         }
 
 
+class RsiResponse(BaseModel):
+    id: int
+    type: TimeFrameType
+    rsi_values: List[float]
+    timestamps: List[datetime]
+    current_rsi: float
+    last_updated: datetime
+    created_at: datetime
+
+    class Config:
+        orm_mode = True  # ORM 모델을 Pydantic 모델로 변환하기 위한 설정
+
+
 class MacdRequest(BaseModel):
     type: TimeFrameType = Field(..., description="타임프레임 (day, week, hour4, hour1)")
     dates: List[datetime] = Field(..., description="각 값에 해당하는 타임스탬프 리스트")
     macd_line: List[float] = Field(..., description="MACD 라인 값들의 리스트")
     signal_line: List[float] = Field(..., description="시그널 라인 값들의 리스트")
     histogram: List[float] = Field(..., description="히스토그램 값들의 리스트")
+    last_updated: datetime = Field(..., description="마지막 macd 시간")
 
     class Config:
         json_schema_extra = {
@@ -169,3 +183,17 @@ class MacdRequest(BaseModel):
                 ],
             }
         }
+
+
+class MacdResponse(BaseModel):
+    id: int
+    type: TimeFrameType
+    dates: List[datetime]
+    macd_line: List[float]
+    signal_line: List[float]
+    histogram: List[float]
+    last_updated: datetime
+    created_at: datetime
+
+    class Config:
+        orm_mode = True  # ORM 모델을 Pydantic 모델로 변환하기 위한 설정

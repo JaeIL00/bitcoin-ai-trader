@@ -4,9 +4,11 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from schemas import (
     MacdRequest,
+    MacdResponse,
     MovingAverageRequest,
     MovingAverageResponse,
     RsiRequest,
+    RsiResponse,
     TimeFrameType,
 )
 from database import get_db, engine, Base
@@ -112,7 +114,7 @@ async def create_moving_average(
         )
 
 
-@app.put("/api/moving-averages/{type}", response_model=Dict[str, Any])
+@app.put("/api/moving-averages/{type}")
 async def update_moving_average_by_type(
     type: TimeFrameType, body: MovingAverageRequest, db: Session = Depends(get_db)
 ):
@@ -212,7 +214,7 @@ async def create_rsi(body: RsiRequest, db: Session = Depends(get_db)):
         )
 
 
-@app.put("/api/rsi/{type}", response_model=Dict[str, Any])
+@app.put("/api/rsi/{type}")
 async def update_rsi_by_type(
     type: TimeFrameType, body: RsiRequest, db: Session = Depends(get_db)
 ):
@@ -226,10 +228,14 @@ async def update_rsi_by_type(
         # 동일한 type의 기존 데이터 찾기
         existing_records = db.query(Rsi).filter(Rsi.type == type).all()
 
+        db.begin_nested()  # savepoint 생성
+
         # 기존 레코드가 있으면 모두 삭제
         if existing_records:
             for record in existing_records:
                 db.delete(record)
+
+        # 트랜잭션 시작
 
         timestamps_json = [ts.isoformat() for ts in body.timestamps]
         # 입력 데이터를 DB 모델로 변환
@@ -254,7 +260,7 @@ async def update_rsi_by_type(
         )
 
 
-@app.get("/api/rsi/{type}")
+@app.get("/api/rsi/{type}", response_model=RsiResponse)
 async def get_rsi_by_type(type: TimeFrameType, db: Session = Depends(get_db)):
     try:
         result = (
@@ -303,7 +309,7 @@ async def create_macd(body: MacdRequest, db: Session = Depends(get_db)):
         )
 
 
-@app.get("/api/macd/{type}", response_model=Macd)
+@app.get("/api/macd/{type}", response_model=MacdResponse)
 async def get_macd_by_type(type: TimeFrameType, db: Session = Depends(get_db)):
     """
     이동평균 데이터를 조회합니다.
@@ -331,9 +337,9 @@ async def get_macd_by_type(type: TimeFrameType, db: Session = Depends(get_db)):
         )
 
 
-@app.put("/api/macd/{type}", response_model=Dict[str, Any])
+@app.put("/api/macd/{type}")
 async def update_macd_by_type(
-    type: TimeFrameType, body: Macd, db: Session = Depends(get_db)
+    type: TimeFrameType, body: MacdRequest, db: Session = Depends(get_db)
 ):
     """
     특정 타입의 이동평균 데이터를 업데이트합니다.
@@ -372,9 +378,7 @@ async def update_macd_by_type(
         db.commit()
 
         # 처리 결과 반환
-        return {
-            "success": True,
-        }
+        return {"success": True}
 
     except Exception as e:
         # 오류 발생 시 롤백
