@@ -1,12 +1,15 @@
-import requests
-from datetime import datetime
-import requests
 import multiprocessing
 
 from .calculation.rsi import rsi
 from .calculation.macd import macd
 from .calculation.moving_average import moving_average
 from log_generator import set_logger
+from api.api import (
+    get_candle_api_call,
+    create_macd,
+    create_moving_average,
+    create_rsi,
+)
 
 logger = set_logger()
 
@@ -16,66 +19,6 @@ hour_4_url = "https://api.upbit.com/v1/candles/minutes/240"
 hour_1_url = "https://api.upbit.com/v1/candles/minutes/60"
 
 
-def insert_moving_average(body):
-    try:
-        response = requests.post(
-            "http://backend:8000/api/moving-averages",
-            json=body,
-        )
-
-        response.raise_for_status()
-        logger.info(f"과거 이동평균선 인서트 완료")
-    except Exception as e:
-        logger.error(f"과거 이동평균선 인서트 실패: {e}")
-        logger.error(body)
-
-
-def insert_rsi(body):
-    try:
-        response = requests.post(
-            "http://backend:8000/api/rsi",
-            json=body,
-        )
-
-        response.raise_for_status()
-        logger.info(f"과거 RSI 인서트 완료")
-    except Exception as e:
-        logger.error(f"과거 RSI 인서트 실패: {e}")
-        logger.error(body)
-
-
-def insert_macd(body):
-    try:
-        response = requests.post(
-            "http://backend:8000/api/macd",
-            json=body,
-        )
-
-        response.raise_for_status()
-        logger.info(f"과거 MACD 인서트 완료")
-    except Exception as e:
-        logger.error(f"과거 MACD 인서트 실패: {e}")
-        logger.error(body)
-
-
-def get_candle_api_call(url, count):
-    try:
-        now = datetime.now()
-        formatted_date = now.strftime("%Y-%m-%d %H:%M:%S")
-
-        params = {"market": "KRW-BTC", "count": count, "to": formatted_date}
-        headers = {"accept": "application/json"}
-
-        response = requests.get(url, params=params, headers=headers)
-
-        response.raise_for_status()
-
-        return response.json()
-    except Exception as e:
-        logger.error(f"캔들 조회 api({url}) 실패: {e}")
-        return None
-
-
 def get_day_candle():
     logger.info("일봉 캔들 조회 시작")
     type = "day"
@@ -83,13 +26,13 @@ def get_day_candle():
     if candles is None:
         return
     moving_average_result = moving_average(candles=candles, type=type)
-    insert_moving_average(moving_average_result)
+    create_moving_average(moving_average_result)
     macd_result = macd(moving_average_result["ma_values"])
     macd_result["type"] = type
-    insert_macd(macd_result)
+    create_macd(macd_result)
 
     rsi_result = rsi(candles, type)
-    insert_rsi(rsi_result)
+    create_rsi(rsi_result)
 
 
 def get_week_candle():
@@ -99,13 +42,13 @@ def get_week_candle():
     if candles is None:
         return
     moving_average_result = moving_average(candles=candles, type=type)
-    insert_moving_average(moving_average_result)
+    create_moving_average(moving_average_result)
     macd_result = macd(moving_average_result["ma_values"])
     macd_result["type"] = type
-    insert_macd(macd_result)
+    create_macd(macd_result)
 
     rsi_result = rsi(candles, type)
-    insert_rsi(rsi_result)
+    create_rsi(rsi_result)
 
 
 def get_hour_4_candle():
@@ -115,13 +58,13 @@ def get_hour_4_candle():
     if candles is None:
         return
     moving_average_result = moving_average(candles=candles, type=type)
-    insert_moving_average(moving_average_result)
+    create_moving_average(moving_average_result)
     macd_result = macd(moving_average_result["ma_values"])
     macd_result["type"] = type
-    insert_macd(macd_result)
+    create_macd(macd_result)
 
     rsi_result = rsi(candles, type)
-    insert_rsi(rsi_result)
+    create_rsi(rsi_result)
 
 
 def get_hour_1_candle():
@@ -131,13 +74,13 @@ def get_hour_1_candle():
     if candles is None:
         return
     moving_average_result = moving_average(candles=candles, type=type)
-    insert_moving_average(moving_average_result)
+    create_moving_average(moving_average_result)
     macd_result = macd(moving_average_result["ma_values"])
     macd_result["type"] = type
-    insert_macd(macd_result)
+    create_macd(macd_result)
 
     rsi_result = rsi(candles, type)
-    insert_rsi(rsi_result)
+    create_rsi(rsi_result)
 
 
 def start_get_candle_process():
