@@ -141,3 +141,17 @@ def get_trade_price_api_call():
         return response.json()
     except Exception as e:
         raise Exception(f"업비트 현재가 호출 중 오류 발생: {e}") from e
+
+
+def get_trade_ticks_api_call(days_ago=0):
+    try:
+        headers = {"accept": "application/json"}
+
+        response = requests.get(
+            f"https://api.upbit.com/v1/trades/ticks?market=KRW-BTC&count=500&days_ago={days_ago}",
+            headers=headers,
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        raise Exception(f"업비트 체결가 호출 중 오류 발생: {e}") from e
