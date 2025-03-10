@@ -1,4 +1,5 @@
 from init_setting_data.init_data import start_get_candle_process
+from .price_monitoring import trade_price_monitoring
 from .candle_monitoring import start_candle_monitoring
 from log_generator import set_logger
 
@@ -12,3 +13,4 @@ def init_data():
 def start_update_monitoring():
     init_data()
     start_candle_monitoring()
+    trade_price_monitoring()

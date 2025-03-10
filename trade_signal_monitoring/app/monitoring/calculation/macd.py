@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import pandas as pd
 from log_generator import set_logger
+from api.api import get_macd
 
 logger = set_logger()
 
@@ -81,3 +82,75 @@ def macd(type, ma_values_data):
     logger.info(f"MACD 계산 완료.")
 
     return result
+
+
+def macd_calc():
+    macd_data = get_macd("hour4")
+    latest_macd = (
+        macd_data["macd_line"][-1]
+        if isinstance(macd_data["macd_line"], list)
+        else macd_data["macd_line"]
+    )
+    latest_signal = (
+        macd_data["signal_line"][-1]
+        if isinstance(macd_data["signal_line"], list)
+        else macd_data["signal_line"]
+    )
+    latest_histogram = (
+        macd_data["histogram"][-1]
+        if isinstance(macd_data["histogram"], list)
+        else macd_data["histogram"]
+    )
+    if latest_macd > latest_signal:
+        trend = "상승"
+        cross_type = (
+            "골든크로스"
+            if latest_macd - latest_signal < latest_histogram * 0.1
+            else None
+        )
+    else:
+        trend = "하락"
+        cross_type = (
+            "데드크로스"
+            if latest_signal - latest_macd < abs(latest_histogram * 0.1)
+            else None
+        )
+
+    # 히스토그램 변화 확인 (추세 강도)
+    histogram_trend = "중립"
+    if (
+        isinstance(macd_data.get("histogram"), list)
+        and len(macd_data["histogram"]) >= 3
+    ):
+        if (
+            macd_data["histogram"][-3]
+            < macd_data["histogram"][-2]
+            < macd_data["histogram"][-1]
+        ):
+            histogram_trend = "강화"
+        else:
+            histogram_trend = "약화"
+
+    if trend == "상승":
+        score = 1.5  # "상승추세"
+
+        if cross_type == "골든크로스":
+            score += 1.5  # 골든크로스
+
+        if histogram_trend == "강화":
+            score += 1  # 모멘텀 강화
+    else:
+        score = 1.5  # 하락추세
+
+        if cross_type == "데드크로스":
+            score -= 1.5  # 데드크로스
+
+        if histogram_trend == "강화":
+            score -= 1  # 모멘텀 강화
+
+    logger.info("macd============")
+    logger.info(trend)
+    logger.info(cross_type)
+    logger.info(histogram_trend)
+
+    return score

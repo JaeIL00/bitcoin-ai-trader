@@ -24,24 +24,28 @@ def moving_average(candles, type):
             "macd_long": 26,
             "macd_short": 12,
             "signal": 9,
+            "add_periods": [7, 25, 50, 100],
         },
         "week": {
             "long_term": 52,
             "macd_long": 26,
             "macd_short": 12,
             "signal": 9,
+            "add_periods": [7, 25, 50],
         },
         "hour4": {
             "long_term": 90,  # 약 3개월로 조정
             "macd_long": 26,
             "macd_short": 12,
             "signal": 9,
+            "add_periods": [7, 25, 50],
         },
         "hour1": {
             "long_term": 84,  # 약 3.5일로 조정
             "macd_long": 26,
             "macd_short": 12,
             "signal": 9,
+            "add_periods": [3, 7, 25],
         },
     }
 

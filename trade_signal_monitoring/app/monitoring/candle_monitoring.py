@@ -75,7 +75,6 @@ def update_ma(type, stop_event):
         target_hours = [1, 5, 9, 13, 17, 21]
         for hour in target_hours:
             if hour > current_hour:
-                logger.info(f"next_target_hour: {hour}")
                 next_target_hour = hour
                 break
             elif hour == current_hour:
@@ -121,7 +120,7 @@ def start_week_day_schedule(stop_event):
     logger.info("week_day 모니터링 시작")
     schedule.every().day.at("09:01").do(api_call_with_calc, "day")
     schedule.every().monday.at("09:01").do(api_call_with_calc, "hour1")
-    while stop_event.is_set():
+    while not stop_event.is_set():
         schedule.run_pending()
         time.sleep(60)
 
