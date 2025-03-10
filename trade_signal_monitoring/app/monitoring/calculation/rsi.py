@@ -1,4 +1,5 @@
 from log_generator import set_logger
+from api.api import get_rsi
 
 logger = set_logger()
 
@@ -114,3 +115,46 @@ def update_rsi(prev_rsi_data, new_candle, type):
     logger.info(f"RSI 업데이트 완료. type: {type}, 현재 RSI: {new_rsi}")
 
     return result
+
+
+def rsi_calc():
+    # 두 타임프레임 RSI 모두 가져오기
+    hour1_rsi = get_rsi("hour1")["current_rsi"]
+    hour4_rsi = get_rsi("hour4")["current_rsi"]
+
+    # Hour1 RSI 기반 기본 점수 (더 높은 가중치)
+    if hour1_rsi <= 30:
+        hour1_score = 2.5  # 과매도
+    elif hour1_rsi >= 70:
+        hour1_score = -2.5  # 과매수
+    elif 30 < hour1_rsi < 45:
+        hour1_score = 0.8  # 약세 회복
+    elif 55 < hour1_rsi < 70:
+        hour1_score = -0.8  # 강세 주의
+    else:
+        hour1_score = 0  # 중립
+
+    # Hour4 RSI 기반 보조 점수 (낮은 가중치)
+    if hour4_rsi <= 30:
+        hour4_score = 1.5  # 과매도
+    elif hour4_rsi >= 70:
+        hour4_score = -1.5  # 과매수
+    elif 30 < hour4_rsi < 45:
+        hour4_score = 0.5  # 약세 회복
+    elif 55 < hour4_rsi < 70:
+        hour4_score = -0.5  # 강세 주의
+    else:
+        hour4_score = 0  # 중립
+
+    # 방향 일치 여부에 따른 보너스 점수
+    if (hour1_score > 0 and hour4_score > 0) or (hour1_score < 0 and hour4_score < 0):
+        alignment_bonus = 1  # 방향 일치 시 보너스
+    else:
+        alignment_bonus = 0  # 방향 불일치
+
+    total_score = hour1_score + hour4_score + alignment_bonus
+    logger.info(
+        f"RSI 분석: 1시간={hour1_rsi:.1f}(점수:{hour1_score}), 4시간={hour4_rsi:.1f}(점수:{hour4_score}), 일치보너스:{alignment_bonus}, 총점:{total_score}"
+    )
+
+    return total_score
