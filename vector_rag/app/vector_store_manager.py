@@ -68,7 +68,7 @@ class VectorStoreManager:
         except Exception as e:
             logger.error(f"Error add_documents: {e}")
 
-    def search_similar_contents(self, query: str) -> str:
+    def search_similar_contents(self, user_prompt: str) -> str:
         try:
             # 유사한 문서 검색
             retriever = self.get_vector_store().as_retriever(search_kwargs={"k": 3})
@@ -96,7 +96,7 @@ class VectorStoreManager:
                 | StrOutputParser()
             )
 
-            response = rag_chain.invoke(query)
+            response = rag_chain.invoke(user_prompt)
             return response
         except Exception as e:
             logger.error(f"Error search_similar_contents: {e}")
