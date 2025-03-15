@@ -16,6 +16,7 @@ langchain-community = "^0.3.18"
 faiss-cpu = "^1.10.0"
 langchain-ollama = "^0.2.3"
 langchain-huggingface = "^0.1.2"
+langsmith = "^0.3.15"
 
 
 [tool.poetry.group.dev.dependencies]

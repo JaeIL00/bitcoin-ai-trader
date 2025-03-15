@@ -1,3 +1,4 @@
+import os
 from langchain.schema import Document
 from typing import Optional
 from langchain_core.output_parsers import StrOutputParser
@@ -7,6 +8,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 import logging
 from langchain_ollama import OllamaLLM  # 변경
 from langchain_core.prompts import PromptTemplate
+from langsmith import Client
 
 logger = logging.getLogger(__name__)
 
@@ -70,12 +72,13 @@ class VectorStoreManager:
         try:
             # 유사한 문서 검색
             retriever = self.get_vector_store().as_retriever(search_kwargs={"k": 3})
-
-            prompt_template = """당신은 질문 답변 작업을 위한 어시스턴트입니다. 다음의 검색된 컨텍스트 정보를 활용하여 질문에 답변하세요. 답을 모르는 경우, 모른다고 솔직히 말하세요. 최대 3문장으로 답변하고 간결하게 유지하세요.
-                질문: {question}
-                컨텍스트: {context}
-                답변:"""
-            prompt = PromptTemplate.from_template(prompt_template)
+            client = Client(api_key=os.getenv("LANGSMITH_API_KEY"))
+            prompt = client.pull_prompt("rlm/rag-prompt", include_model=True)
+            # prompt_template = """당신은 질문 답변 작업을 위한 어시스턴트입니다. 다음의 검색된 컨텍스트 정보를 활용하여 질문에 답변하세요. 답을 모르는 경우, 모른다고 솔직히 말하세요. 최대 3문장으로 답변하고 간결하게 유지하세요.
+            #     질문: {question}
+            #     컨텍스트: {context}
+            #     답변:"""
+            # prompt = PromptTemplate.from_template(prompt_template)
 
             llm = OllamaLLM(
                 model="llama3.1",
