@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timezone
 from log_generator import set_logger
 import statistics
@@ -394,6 +395,7 @@ def volume_signal_calc():
     for i in range(7):
         response = get_trade_ticks_api_call(i + 1)
         result[f"day_ago_{i+1}"] = response
+        time.sleep(1)
 
     voluem_analysis = analyze_volume_from_daily_ticks(result)
     score = enhanced_volume_signal(voluem_analysis)
