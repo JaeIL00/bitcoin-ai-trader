@@ -21,7 +21,7 @@ logger = set_logger()
 day_url = "https://api.upbit.com/v1/candles/days"
 week_url = "https://api.upbit.com/v1/candles/weeks"
 hour_4_url = "https://api.upbit.com/v1/candles/minutes/240"
-hour_1_url = "https://api.upbit.com/v1/candles/minutes/1"
+hour_1_url = "https://api.upbit.com/v1/candles/minutes/60"
 
 
 def api_call_with_calc(type):
