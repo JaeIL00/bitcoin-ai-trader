@@ -100,8 +100,8 @@ def monitoring(playwright, latest_title):
                             "http://backend:8000/api/logs",
                             json={
                                 "message": f"새로운 기사를 수집했어요! {title}",
-                                "module": "Crawling",
-                                "timestamp": datetime.now(),
+                                "module": "crawling",
+                                "timestamp": datetime.now().isoformat(),
                             },
                         )
 
