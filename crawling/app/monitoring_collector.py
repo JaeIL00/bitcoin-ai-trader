@@ -1,6 +1,6 @@
 import time
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 from log_generator import set_logger
 from news_parser import NewsParser
 
@@ -101,7 +101,7 @@ def monitoring(playwright, latest_title):
                             json={
                                 "message": f"새로운 기사를 수집했어요! {title}",
                                 "module": "crawling",
-                                "timestamp": datetime.now().isoformat(),
+                                "timestamp": datetime.now(timezone.utc).isoformat(),
                             },
                         )
 

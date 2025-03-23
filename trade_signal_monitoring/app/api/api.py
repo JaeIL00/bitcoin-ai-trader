@@ -1,5 +1,5 @@
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 
 from log_generator import set_logger
 
@@ -191,7 +191,7 @@ def post_realtime_log(message):
             json={
                 "message": message,
                 "module": "trade",
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             },
         )
         response_realtime_log.raise_for_status()
