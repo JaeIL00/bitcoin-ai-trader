@@ -1,5 +1,5 @@
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 
 from log_generator import set_logger
 
@@ -182,3 +182,18 @@ def get_trade_ticks_api_call(days_ago=0):
         return response.json()
     except Exception as e:
         raise Exception(f"업비트 체결가 호출 중 오류 발생: {e}") from e
+
+
+def post_realtime_log(message):
+    try:
+        response_realtime_log = requests.post(
+            "http://backend:8000/api/logs",
+            json={
+                "message": message,
+                "module": "trade",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+        response_realtime_log.raise_for_status()
+    except Exception as e:
+        raise Exception(f"실시간 로그 전송 오류 발생: {e}") from e

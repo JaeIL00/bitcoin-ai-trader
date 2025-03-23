@@ -13,7 +13,8 @@ services:
       options:
         max-file: "3"
         max-size: "250m"
-    # 볼륨매핑
+    networks:
+      - app-network
 
   adminer:
     container_name: adminer
@@ -23,6 +24,8 @@ services:
       - 8000:80
     depends_on:
       - db
+    networks:
+      - app-network
 
   backend:
     container_name: backend
@@ -41,6 +44,8 @@ services:
       options:
         max-file: "3"
         max-size: "250m"
+    networks:
+      - app-network
 
   crawling:
     container_name: crawling
@@ -58,6 +63,8 @@ services:
       options:
         max-file: "3"
         max-size: "250m"
+    networks:
+      - app-network
 
   playwright:
     image: mcr.microsoft.com/playwright:v1.50.0-noble
@@ -68,6 +75,8 @@ services:
     working_dir: /home/pwuser
     command: /bin/sh -c "npx -y playwright@1.50.0 run-server --port 3000 --host 0.0.0.0"
     init: true
+    networks:
+      - app-network
     
   vector_rag:
     container_name: vector_rag
@@ -89,6 +98,8 @@ services:
       options:
         max-file: "3"
         max-size: "250m"
+    networks:
+      - app-network
 
   trade_signal_monitoring:
     container_name: trade_signal_monitoring
@@ -103,6 +114,23 @@ services:
       options:
         max-file: "3"
         max-size: "250m"
+    networks:
+      - app-network
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:80
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "3"
+        max-size: "250m"
+    networks:
+      - app-network
 
 networks:
   app-network:

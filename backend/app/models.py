@@ -1,5 +1,5 @@
 from database import Base
-from sqlalchemy import Column, Integer, Float, DateTime, Enum, JSON
+from sqlalchemy import Column, Integer, Float, DateTime, Enum, JSON, String
 from sqlalchemy.sql import func
 
 
@@ -118,5 +118,22 @@ class Macd(Base):
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),
+        nullable=False,
+    )
+
+
+class LatestLog(Base):
+    __tablename__ = "latest_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    module = Column(
+        String, index=True, nullable=False, unique=True
+    )  # 모듈별 고유 로그를 위한 unique 제약
+    message = Column(String, nullable=False)
+    timestamp = Column(DateTime(timezone=True), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False,
     )
