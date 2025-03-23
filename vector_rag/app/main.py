@@ -8,6 +8,10 @@ class ContentInput(BaseModel):
     content: str
 
 
+class PromptInput(BaseModel):
+    question: str
+
+
 app = FastAPI()
 vector_store_manager = VectorStoreManager.get_instance()
 
@@ -26,10 +30,10 @@ async def add_content(body: ContentInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/vector-store/get-similar/{query}")
-async def get_similar(query: str):
+@app.post("/vector-store/get-similar")
+async def get_similar(body: PromptInput):
     try:
-        response = vector_store_manager.search_similar_contents(query)
+        response = vector_store_manager.search_similar_contents(body.question)
 
         return {"answer": response}
     except Exception as e:

@@ -115,6 +115,33 @@ def put_macd(type, body):
         raise Exception(f"macd 수정 호출 중 오류 발생: {e}") from e
 
 
+def get_vector_store_similar_ai():
+    try:
+        # 최근 비트코인 시장에서 긍정적 요소가 부정적 요소보다 더 많습니까?
+        prompt = """
+            You are a Bitcoin market expert. You must analyze recent Bitcoin news and market trends to evaluate the current situation.System instruction: You MUST search and refer to the stored recent Bitcoin news and market data to answer this question.
+
+            Question: Are there more positive factors than negative ones in the recent Bitcoin market?
+
+            Response requirements:
+            1. Answer with EXACTLY ONE of these three words only: YES / NO / NEUTRAL
+            2. Do NOT include any other words or sentences
+            3. Access the stored market data to inform your answer
+
+            Response format: [YES/NO/NEUTRAL]
+        """
+        response = requests.post(
+            f"http://vector_rag:8000/vector-store/get-similar",
+            json={"question": prompt},
+        )
+
+        response.raise_for_status()
+
+        return response.json()
+    except Exception as e:
+        raise Exception(f"AI New Rag 호출 중 오류 발생: {e}") from e
+
+
 def get_candle_api_call(url, count):
     try:
         now = datetime.now()
