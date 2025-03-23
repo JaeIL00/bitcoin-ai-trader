@@ -96,6 +96,17 @@ def monitoring(playwright, latest_title):
 
                         response.raise_for_status()
 
+                        response_realtime_log = requests.post(
+                            "http://backend:8000/api/logs",
+                            json={
+                                "message": f"새로운 기사를 수집했어요! {title}",
+                                "module": "Crawling",
+                                "timestamp": datetime.now(),
+                            },
+                        )
+
+                        response_realtime_log.raise_for_status()
+
                         if index == 0:
                             temp_title = title
                         logger.info("Success save content")
