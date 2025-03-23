@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import useWebSocket from './hook/useWebsocket'
-interface LogEntry {
-  timestamp: string;
-  level: 'info' | 'warning' | 'error' | 'debug';
-  message: string;
-}
+
 function App() {
   const logContainerRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
-  const { isConnected, messages, error, connect, disconnect } = useWebSocket('ws://localhost:5002/ws/logs');
+  const { isConnected, messages, error} = useWebSocket('ws://localhost:5002/ws/logs');
 
   // 자동 스크롤 
   useEffect(() => {
@@ -22,14 +18,6 @@ function App() {
     setAutoScroll(!autoScroll);
   };
 
-  // 연결 토글
-  const toggleConnection = () => {
-    if (isConnected) {
-      disconnect();
-    } else {
-      connect();
-    }
-  };
 
   return (
     <div className="grid grid-rows-[auto_1fr] h-screen bg-white dark:bg-gray-900 p-4">
@@ -82,6 +70,9 @@ function App() {
             <div className="flex flex-col sm:flex-row sm:items-center mb-1">
               <span className="font-mono text-sm text-gray-500 dark:text-gray-400 mr-2">
                 {new Date(log.timestamp).toLocaleString()}
+              </span>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 w-fit">
+                {log.module.toUpperCase()}
               </span>
             </div>
             <p className="text-gray-800 dark:text-gray-200 break-words whitespace-pre-wrap font-mono text-sm text-left">
