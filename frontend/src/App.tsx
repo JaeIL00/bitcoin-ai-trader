@@ -4,7 +4,7 @@ import useWebSocket from './hook/useWebsocket'
 function App() {
   const logContainerRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState<boolean>(true);
-  const { isConnected, messages, error} = useWebSocket('ws://localhost:5002/ws/logs');
+  const { isConnected, messages, error} = useWebSocket(`ws://${window.location.host}/ws/logs`);
 
   // 자동 스크롤 
   useEffect(() => {
