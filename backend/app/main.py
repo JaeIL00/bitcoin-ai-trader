@@ -1,7 +1,9 @@
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from ws_connection_manager import WsConnectionManager
 from schemas import (
     MacdRequest,
     MacdResponse,
@@ -30,6 +32,16 @@ class ContentInput(BaseModel):
 Base.metadata.create_all(bind=engine)  # 여기서 테이블을 생성합니다!
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 실제 운영 환경에서는 구체적인 출처 지정
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+manager = WsConnectionManager()
 
 
 @app.get("/")
@@ -388,6 +400,32 @@ async def update_macd_by_type(
         raise HTTPException(
             status_code=500, detail=f"Macd {type} 데이터 업데이트 실패: {str(e)}"
         )
+
+
+@app.post("/api/logs")
+async def receive_logs(log: Dict):
+    # 로그 수신 후 WebSocket으로 브로드캐스트
+    await manager.broadcast(log)
+    return {"success": True}
+
+
+@app.websocket("/ws/logs")
+async def websocket_endpoint(websocket: WebSocket):
+    # 연결 수락
+    await manager.connect(websocket)
+
+    try:
+        # 클라이언트와의 연결 유지
+        while True:
+            # 클라이언트로부터 메시지 기다리기 (필요한 경우)
+            # 여기서는 단순히 연결 유지만을 위한 루프
+            data = await websocket.receive_text()
+            # 클라이언트로부터 메시지를 받아 처리하려면 여기에 코드 추가
+
+    except Exception as e:
+        # 기타 예외 처리
+        manager.disconnect(websocket)
+        print(f"WebSocket 오류: {e}")
 
 
 if __name__ == "__main__":
