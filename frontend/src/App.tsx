@@ -1,23 +1,52 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import useWebSocket from './hook/useWebsocket'
+import axios, { AxiosError } from 'axios'
 
 function App() {
-  const logContainerRef = useRef<HTMLDivElement>(null);
-  const [autoScroll, setAutoScroll] = useState<boolean>(true);
-  const { isConnected, messages, error} = useWebSocket(`ws://${window.location.host}/ws/logs`);
+  const logContainerRef = useRef<HTMLDivElement>(null)
+  const [autoScroll, setAutoScroll] = useState<boolean>(true)
+  // const { isConnected, message, error } = useWebSocket(`ws://localhost:5002/ws/logs`)
+  const { isConnected, messages, error } = useWebSocket(`ws://${window.location.host}/ws/logs`)
 
-  // 자동 스크롤 
+  // 자동 스크롤
   useEffect(() => {
     if (logContainerRef.current && autoScroll) {
-      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight
     }
-  }, [messages, autoScroll]);
+  }, [messages, autoScroll])
 
   // 자동 스크롤 토글
   const toggleAutoScroll = () => {
-    setAutoScroll(!autoScroll);
-  };
+    setAutoScroll(!autoScroll)
+  }
 
+  const [logData, setLogData] = useState<{ message: string; module: string; timestamp: string }[]>([])
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const logFetch = async () => {
+    try {
+      const response = await axios.get(`http://${window.location.host}/api/logs`)
+      // const response = await axios.get(`http://localhost:5002/api/logs`)
+
+      if (response.status == 200) {
+        setLogData(response.data)
+      }
+    } catch (err) {
+      const error = err as AxiosError
+      setErrorMessage(error.message)
+    }
+  }
+
+  useLayoutEffect(() => {
+    if (!logData.length || !messages) return
+    setLogData((prev) => {
+      if (prev.length >= 100) return messages
+      return [...prev, messages]
+    })
+  }, [messages])
+
+  useEffect(() => {
+    logFetch()
+  }, [])
 
   return (
     <div className="grid grid-rows-[auto_1fr] h-screen bg-white dark:bg-gray-900 p-4">
@@ -29,13 +58,13 @@ function App() {
             {isConnected ? '✅' : '❌'}
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
-          <button 
+          <button
             onClick={toggleAutoScroll}
             className={`lg:block hidden px-3 py-1 rounded-md text-sm transition-colors ${
-              autoScroll 
-                ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' 
+              autoScroll
+                ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
                 : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
             }`}
           >
@@ -43,43 +72,47 @@ function App() {
           </button>
         </div>
       </div>
-      
+
       {/* 에러 알림 */}
       {error && (
         <div className="mx-4 mt-2 p-3 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 rounded-md">
-          <p>연결 오류: {error.message || "웹소켓 연결에 문제가 발생했습니다."}</p>
+          <p>연결 오류: {error.message || '웹소켓 연결에 문제가 발생했습니다.'}</p>
         </div>
       )}
 
       {/* 로그 컨테이너 */}
-      <div 
-        ref={logContainerRef}
-        className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900"
-      >
-        {messages.length === 0 && (
+      <div ref={logContainerRef} className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
+        {logData.length === 0 && (
           <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
             <p>로그 메시지가 없습니다</p>
           </div>
         )}
-        
-        {messages.map((log, index) => (
-          <div 
-            key={index} 
-            className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border-l-4 border-blue-500 animate-fadeIn transition-all hover:shadow-md mb-4"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center mb-1">
-              <span className="font-mono text-sm text-gray-500 dark:text-gray-400 mr-2">
-                {new Date(log.timestamp).toLocaleString()}
-              </span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 w-fit">
-                {log.module.toUpperCase()}
-              </span>
+
+        {!!logData.length &&
+          logData.map((log, index) => (
+            <div
+              key={index}
+              className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border-l-4 border-blue-500 animate-fadeIn transition-all hover:shadow-md mb-4"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center mb-1">
+                <span className="font-mono text-sm text-gray-500 dark:text-gray-400 mr-2">
+                  {new Date(log.timestamp).toLocaleString()}
+                </span>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 w-fit">
+                  {log.module.toUpperCase()}
+                </span>
+              </div>
+              <p className="text-gray-800 dark:text-gray-200 break-words whitespace-pre-wrap font-mono text-sm text-left">
+                {log.message}
+              </p>
             </div>
-            <p className="text-gray-800 dark:text-gray-200 break-words whitespace-pre-wrap font-mono text-sm text-left">
-              {log.message}
-            </p>
+          ))}
+        {/* 에러 알림 */}
+        {errorMessage && (
+          <div className="mx-4 mt-2 p-3 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 rounded-md">
+            <p>로그 DB 조회 오류: {errorMessage || '로그 DB 조회에 문제가 발생했습니다.'}</p>
           </div>
-        ))}
+        )}
       </div>
 
       {/* 자동 스크롤 표시기 (모바일에서 좀 더 접근하기 쉽게) */}
@@ -87,18 +120,26 @@ function App() {
         <button
           onClick={toggleAutoScroll}
           className={`p-3 rounded-full shadow-lg ${
-            autoScroll 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+            autoScroll ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
           }`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polyline points="7 13 12 18 17 13"></polyline>
           </svg>
         </button>
       </div>
     </div>
-  );
+  )
 }
 
 export default App
