@@ -50,14 +50,17 @@ def trade_price_monitoring():
                     """
                     if max_response == "YES":
                         logger.info(
-                            "매수 추천! 근데 거래 지표가 이미 떡상이면 매수 늦음!"
+                            "3단계 분석 결과: 매수 추천! 거래 지표가 이미 떡상이면 매수 늦음!"
                         )
                     elif max_response == "NO":
                         logger.info(
-                            "매도 추천! 근데 거래 지표가 이미 나락이면 매수 기회!"
+                            "3단계 분석 결과: 매도 추천! 거래 지표가 이미 나락이면 매수 기회!"
                         )
                     else:
-                        logger.info("긍정과 부정 의견이 대립하니까 패스!")
+                        logger.info(
+                            "3단계 분석 결과: 긍정과 부정 의견이 대립하니까 패스!"
+                        )
+                    break
 
             else:
                 logger.info("1단계 신호가 2단계 분석 기준을 충족하지 않습니다.")
