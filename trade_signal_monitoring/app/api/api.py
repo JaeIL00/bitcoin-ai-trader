@@ -191,10 +191,9 @@ def post_realtime_log(message):
             json={
                 "message": message,
                 "module": "trade",
-                "timestamp": datetime.now(),
+                "timestamp": datetime.now().isoformat(),
             },
         )
+        response_realtime_log.raise_for_status()
     except Exception as e:
         raise Exception(f"실시간 로그 전송 오류 발생: {e}") from e
-
-    response_realtime_log.raise_for_status()

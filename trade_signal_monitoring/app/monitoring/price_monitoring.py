@@ -22,6 +22,9 @@ def trade_price_monitoring():
             current_price = trade_price[0]["trade_price"]
 
             frist_analysis = first_step(current_price)
+            post_realtime_log(
+                f"1단계 분석 결과: {frist_analysis['action']} {frist_analysis['strength']}!"
+            )
 
             if frist_analysis["proceed_to_stage2"]:
                 post_realtime_log("2단계 분석 시작!")
@@ -80,7 +83,7 @@ def trade_price_monitoring():
 
             else:
                 logger.info("1단계 신호가 2단계 분석 기준을 충족하지 않습니다.")
-                post_realtime_log("1단계 분석 결과: 2단계 분석 시작 기준 미달!")
+                post_realtime_log(f"1단계 분석 결과: 2단계 분석 시작 기준 미달!")
 
             time.sleep(ONE_MINUTE)
         except Exception as e:

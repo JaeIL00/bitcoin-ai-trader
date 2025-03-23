@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from ws_connection_manager import WsConnectionManager
 from schemas import (
+    LogResponse,
     MacdRequest,
     MacdResponse,
     MovingAverageRequest,
@@ -14,7 +15,7 @@ from schemas import (
     TimeFrameType,
 )
 from database import get_db, engine, Base
-from models import Macd, MovingAverage, Rsi
+from models import LatestLog, Macd, MovingAverage, Rsi
 from typing import List, Dict, Any, Optional
 
 
@@ -35,7 +36,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 실제 운영 환경에서는 구체적인 출처 지정
+    allow_origins=[
+        "http://219.250.32.135:3000",
+        "http://localhost:3000",
+    ],  # 실제 운영 환경에서는 구체적인 출처 지정
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -402,8 +406,32 @@ async def update_macd_by_type(
         )
 
 
+@app.get("/api/logs", response_model=List[LogResponse])
+def get_all_latest_logs(db: Session = Depends(get_db)):
+    logs = db.query(LatestLog).order_by(LatestLog.timestamp.asc()).all()
+    return logs
+
+
 @app.post("/api/logs")
-async def receive_logs(log: Dict):
+async def receive_logs(log: Dict, db: Session = Depends(get_db)):
+    existing_log = db.query(LatestLog).filter(LatestLog.module == log["module"]).first()
+
+    if existing_log:
+        # 기존 로그 업데이트
+        existing_log.message = log["message"]
+        existing_log.timestamp = log["timestamp"]
+        db.commit()
+        db.refresh(existing_log)
+        log_obj = existing_log
+    else:
+        # 새 로그 생성
+        log_obj = LatestLog(
+            module=log["module"], message=log["message"], timestamp=log["timestamp"]
+        )
+        db.add(log_obj)
+        db.commit()
+        db.refresh(log_obj)
+
     # 로그 수신 후 WebSocket으로 브로드캐스트
     await manager.broadcast(log)
     return {"success": True}

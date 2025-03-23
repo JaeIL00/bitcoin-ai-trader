@@ -197,3 +197,17 @@ class MacdResponse(BaseModel):
 
     class Config:
         orm_mode = True  # ORM 모델을 Pydantic 모델로 변환하기 위한 설정
+
+
+class LogBase(BaseModel):
+    message: str
+    module: str
+    timestamp: datetime
+
+
+class LogResponse(LogBase):
+    id: int
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
